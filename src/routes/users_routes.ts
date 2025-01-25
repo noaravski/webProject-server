@@ -92,6 +92,8 @@ const router = express.Router();
  *                   example: 60d0fe4f5311236168a109ca
  *       400:
  *         description: Invalid credentials or request
+ *       404:
+ *         description: User not found
  *       500:
  *         description: Server error
  */
@@ -119,6 +121,8 @@ router.post("/login", login);
  *       200:
  *         description: Successful logout
  *       400:
+ *         description: missing refresh token
+ *       403:
  *         description: Invalid refresh token
  *       500:
  *         description: Server error
@@ -159,8 +163,6 @@ router.post("/logout", logout);
  *                   example: hghkgkgkufkydtsrsrdklojojoppjgeww...
  *       400:
  *         description: Invalid refresh token
- *       500:
- *         description: Server error
  */
 router.post("/refresh", refresh);
 
@@ -181,12 +183,16 @@ router.get("/", (req: Request, res: Response) => {
 *           schema:
 *             $ref: '#/components/schemas/User'
 *     responses:
-*       200:
+*       201:
 *         description: The new user
 *         content:
 *           application/json:
 *             schema:
 *               $ref: '#/components/schemas/User'
+*       400:
+*         description: User already exists or missing fields!
+*       500:
+*         description: Server error
 */
 router.post("/", (req: Request, res: Response) => {
   createUser(req, res);

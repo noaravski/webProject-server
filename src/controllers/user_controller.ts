@@ -116,7 +116,7 @@ const logout = async (req: Request, res: Response) => {
     process.env.TOKEN_SECRET,
     async (err: any, data: any) => {
       if (err) {
-        res.status(403).send("invalid token");
+        res.status(500).send("internal error");
         return;
       }
       const payload = data as TokenPayload;
