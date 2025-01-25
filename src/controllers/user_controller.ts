@@ -20,7 +20,7 @@ const createUser = async (req: Request, res: Response) => {
       });
       res.status(201).send(user);
     } catch (error) {
-      res.status(400).send(error);
+      res.status(500).send(error);
     }
   } else {
     res.status(400).send("User already exists or missing fields!");
@@ -72,7 +72,7 @@ const login = async (req: Request, res: Response) => {
   }
   const user = await userModel.findOne({ email: email, username: username });
   if (!user) {
-    res.status(400).send("Email, username and password are required");
+    res.status(404).send("User not found");
     return;
   }
   const isMatch = await bcrypt.compare(password, user.password);
@@ -122,7 +122,7 @@ const logout = async (req: Request, res: Response) => {
       const payload = data as TokenPayload;
       const user = await userModel.findOne({ _id: payload._id });
       if (!user) {
-        res.status(404).send("invalid token");
+        res.status(403).send("invalid token");
         return;
       }
       const tokens = user.refreshToken.filter((t) => t !== refreshToken);
@@ -134,7 +134,6 @@ const logout = async (req: Request, res: Response) => {
 };
 
 const refresh = async (req: Request, res: Response) => {
-  //first validate the refresh token
   const refreshToken = req.body.refreshToken;
   if (!refreshToken) {
     res.status(400).send("refresh token is required");
@@ -145,14 +144,14 @@ const refresh = async (req: Request, res: Response) => {
     process.env.TOKEN_SECRET,
     async (err: any, data: any) => {
       if (err) {
-        res.status(500).send("Internal server error");
+        res.status(400).send("Invalid Refresh Token");
         return;
       }
       //find the user
       const payload = data as TokenPayload;
       const user = await userModel.findOne({ _id: payload._id });
       if (!user) {
-        res.status(404).send("invalid token");
+        res.status(400).send("invalid token");
         return;
       }
       //check that the token exists in the user

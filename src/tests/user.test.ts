@@ -247,7 +247,7 @@ describe("Users Tests", () => {
       .send({
         refreshToken: "AAA",
       });
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
   });
   test("User -> refresh with valid token not existing", async () => {
     const response = await request(app)
@@ -256,7 +256,7 @@ describe("Users Tests", () => {
         refreshToken:
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2Nzc5NzNiYzE4YjIyNWZhOGIyZDZmZDQiLCJyYW5kb20iOiIwLjE3NjQ0MzU0MDc2NzEwMzIyIiwiaWF0IjoxNzM2MDEyNzMzLCJleHAiOjE3MzY2MTc1MzN9.Z9qt7VSIeoSgdj_uKZr-Hxlz8sUEF06B9mbrwJN1uzY",
       });
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
   });
   test("User -> refresh with invalid token_secret in .env", async () => {
     const prev = process.env.TOKEN_SECRET;
@@ -265,7 +265,7 @@ describe("Users Tests", () => {
     const response = await request(app)
       .post(baseUrl + "/refresh")
       .send(testUser);
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
 
     process.env.TOKEN_SECRET = prev;
   });
