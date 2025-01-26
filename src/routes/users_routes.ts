@@ -92,6 +92,7 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/UserLogin'
+
  *     responses:
  *       200:
  *         description: Successful login

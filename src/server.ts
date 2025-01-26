@@ -16,6 +16,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "*");
   next();
 });
+
 app.use("/user", userRoutes);
 
 const options = {
