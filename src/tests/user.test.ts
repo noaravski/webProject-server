@@ -178,7 +178,6 @@ describe("Users Tests", () => {
       .post(baseUrl + "/login")
       .send({
         email: "notExistingEmail",
-        username: "notExistingUsername",
         password: "noteExistingPassword",
       });
     expect(response.statusCode).not.toBe(200);
@@ -188,7 +187,6 @@ describe("Users Tests", () => {
       .post(baseUrl + "/login")
       .send({
         email: testUser.email,
-        username: testUser.username,
         password: "incorrectPassword",
       });
     expect(response.statusCode).not.toBe(200);

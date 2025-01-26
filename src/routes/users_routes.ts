@@ -57,6 +57,28 @@ const router = express.Router();
 */
 
 /**
+* @swagger
+* components:
+*   schemas:
+*     UserLogin:
+*       type: object
+*       required:
+*         - email
+*         - password
+*       properties:
+*         email:
+*           type: string
+*           description: The user email
+*         password:
+*           type: string
+*           description: The user password
+* 
+*       example:
+*         email: 'bob@gmail.com'
+*         password: '123456'
+*/
+
+/**
  * @swagger
  * /user/login:
  *   post:
@@ -69,7 +91,7 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             $ref: '#/components/schemas/UserLogin'
  *     responses:
  *       200:
  *         description: Successful login

@@ -65,12 +65,11 @@ const generateToken = (userId: string): tTokens | null => {
 const login = async (req: Request, res: Response) => {
   const email = req.body.email;
   const password = req.body.password;
-  const username = req.body.username;
-  if (!email || !password || !username) {
-    res.status(400).send("Email, username and password are required");
+  if (!email || !password ) {
+    res.status(400).send("Email and password are required");
     return;
   }
-  const user = await userModel.findOne({ email: email, username: username });
+  const user = await userModel.findOne({ email: email});
   if (!user) {
     res.status(404).send("User not found");
     return;
