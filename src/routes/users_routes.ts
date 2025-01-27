@@ -7,6 +7,7 @@ import {
   login,
   logout,
   refresh,
+  googleLogin,
 } from "../controllers/user_controller";
 
 
@@ -57,6 +58,28 @@ const router = express.Router();
 */
 
 /**
+* @swagger
+* components:
+*   schemas:
+*     UserLogin:
+*       type: object
+*       required:
+*         - email
+*         - password
+*       properties:
+*         email:
+*           type: string
+*           description: The user email
+*         password:
+*           type: string
+*           description: The user password
+* 
+*       example:
+*         email: 'bob@gmail.com'
+*         password: '123456'
+*/
+
+/**
  * @swagger
  * /user/login:
  *   post:
@@ -69,7 +92,8 @@ const router = express.Router();
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             $ref: '#/components/schemas/UserLogin'
+
  *     responses:
  *       200:
  *         description: Successful login
@@ -98,6 +122,9 @@ const router = express.Router();
  *         description: Server error
  */
 router.post("/login", login);
+
+router.post("/login/google", googleLogin);
+
 
 /**
  * @swagger
@@ -166,6 +193,25 @@ router.post("/logout", logout);
  */
 router.post("/refresh", refresh);
 
+/**
+ * @swagger
+ * /user:
+ *   get:
+ *     summary: Retrieve a list of all users
+ *     description: Retrieve a list of all users
+ *     tags: [User]
+ *     responses:
+ *       200:
+ *         description: A list of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       500:
+ *         description: Server error
+ */
 router.get("/", (req: Request, res: Response) => {
   usersController.getAllItems(req, res);
 });
@@ -198,14 +244,104 @@ router.post("/", (req: Request, res: Response) => {
   createUser(req, res);
 });
 
+/**
+ * @swagger
+ * /user/{id}:
+ *   get:
+ *     summary: Retrieve a single user by ID
+ *     description: Retrieve a single user by its ID
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *     responses:
+ *       200:
+ *         description: A single user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: User not found or invalid ID supplied
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 router.get("/:id", (req: Request, res: Response) => {
   usersController.getItemById(req, res);
 });
 
+/**
+ * @swagger
+ * /user/{id}:
+ *   put:
+ *     summary: Update a user by ID
+ *     description: Update a single user by its ID
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: The updated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: User not found or invalid ID supplied
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 router.put("/:id", (req: Request, res: Response) => {
   updateUser(req, res);
 });
 
+/**
+ * @swagger
+ * /user/{id}:
+ *   delete:
+ *     summary: Delete a user by ID
+ *     description: Delete a single user by its ID
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *     responses:
+ *       200:
+ *         description: User deleted
+ *       400:
+ *         description: User not found or invalid ID supplied
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 router.delete("/:id", (req: Request, res: Response) => {
   deleteUser(req, res);
 });
