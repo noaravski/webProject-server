@@ -49,7 +49,7 @@ const generateToken = (userId: string): tTokens | null => {
       random: random,
     },
     process.env.TOKEN_SECRET,
-    { expiresIn: process.env.TOKEN_EXPIRES as string | number }
+    { expiresIn: process.env.TOKEN_EXPIRES }
   );
 
   const refreshToken = jwt.sign(
@@ -58,7 +58,7 @@ const generateToken = (userId: string): tTokens | null => {
       random: random,
     },
     process.env.TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES as string | number }
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES }
   );
   return {
     accessToken: accessToken,
