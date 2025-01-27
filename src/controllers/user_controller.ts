@@ -3,6 +3,8 @@ import BaseController from "./base_controller";
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
+import dotenv from "dotenv";
 
 const usersController = new BaseController<IUser>(userModel);
 
@@ -33,6 +35,8 @@ type tTokens = {
 };
 
 const generateToken = (userId: string): tTokens | null => {
+  console.log("refresh token expires in: ", process.env.REFRESH_TOKEN_EXPIRES);
+
   const random = Math.random().toString();
 
   if (!process.env.TOKEN_SECRET) {
@@ -45,7 +49,7 @@ const generateToken = (userId: string): tTokens | null => {
       random: random,
     },
     process.env.TOKEN_SECRET,
-    { expiresIn: process.env.TOKEN_EXPIRES }
+    { expiresIn: process.env.TOKEN_EXPIRES as string | number }
   );
 
   const refreshToken = jwt.sign(
@@ -54,7 +58,7 @@ const generateToken = (userId: string): tTokens | null => {
       random: random,
     },
     process.env.TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES }
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES as string | number }
   );
   return {
     accessToken: accessToken,
@@ -65,11 +69,11 @@ const generateToken = (userId: string): tTokens | null => {
 const login = async (req: Request, res: Response) => {
   const email = req.body.email;
   const password = req.body.password;
-  if (!email || !password ) {
+  if (!email || !password) {
     res.status(400).send("Email and password are required");
     return;
   }
-  const user = await userModel.findOne({ email: email});
+  const user = await userModel.findOne({ email: email });
   if (!user) {
     res.status(404).send("User not found");
     return;
@@ -220,7 +224,9 @@ const updateUser = async (req: Request, res: Response) => {
       res.status(400).send(error.message);
     }
   } else {
-    res.status(400).send("Username or email is taken or user to update doesnt exists!");
+    res
+      .status(400)
+      .send("Username or email is taken or user to update doesnt exists!");
   }
 };
 
@@ -239,6 +245,35 @@ const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
+const client = new OAuth2Client();
+
+const googleLogin = async (req: Request, res: Response) => {
+  const credential = req.body.credential;
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const email = payload?.email;
+    let user = await userModel.findOne({ email: email });
+    if (user == null) {
+      user = await userModel.create({
+        email: email,
+        username: payload?.name,
+        // imageUrl: payload?.picture,
+        password: "google-signin",
+      });
+    }
+    const tokens = generateToken(user._id);
+    res.status(200).send(tokens);
+    return;
+  } catch (err) {
+    res.status(400).send("error missing email or password");
+    return;
+  }
+};
+
 export {
   usersController,
   createUser,
@@ -247,4 +282,5 @@ export {
   login,
   logout,
   refresh,
+  googleLogin,
 };
