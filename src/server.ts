@@ -8,8 +8,12 @@ import commentsRoute from "./routes/comments_routes";
 import userRoutes from "./routes/users_routes";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
+// import cors from "cors";
+
+
 
 const app = express();
+// app.use(cors({ origin: true, credentials: true }));
 
 
 
