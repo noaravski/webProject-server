@@ -1,4 +1,4 @@
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
@@ -8,14 +8,8 @@ import commentsRoute from "./routes/comments_routes";
 import userRoutes from "./routes/users_routes";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
-// import cors from "cors";
-
-
 
 const app = express();
-// app.use(cors({ origin: true, credentials: true }));
-
-
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -26,14 +20,11 @@ app.use((req, res, next) => {
   next();
 });
 
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/", postsRoute);
 app.use("/", commentsRoute);
 app.use("/user", userRoutes);
-
-
 
 const options = {
   definition: {

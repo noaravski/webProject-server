@@ -43,6 +43,7 @@ const router = express.Router();
  *         title: My First Post
  *         content: This is the content of my first post.
  *         sender: noa
+ *         likes: [245234t234234r234r23f4]
  */
 
 /**
@@ -224,11 +225,55 @@ router.put("/post/:id", authMiddleware, (req: Request, res: Response) => {
   postController.updateItem(req, res);
 });
 
+
+/**
+ * @swagger
+ * /post/like/{id}:
+ *   put:
+ *     summary: add a like to a post
+ *     description: add a like to a post by its ID
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The post id
+ *     responses:
+ *       200:
+ *         description: The like was added successfully
+ *       400:
+ *         description: The like was not added
+ */
 router.put("/post/like/:id", authMiddleware, (req: Request, res: Response) => {
   addLike(req, res);
 });
 
-router.put(
+/**
+ * @swagger
+ * /post/unlike/{id}:
+ *   put:
+ *     summary: remove a like from a post
+ *     description: remove a like from a post by its ID
+ *     tags: [Posts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The post id
+ *     responses:
+ *       200:
+ *         description: The like was removed successfully
+ *       400:
+ *         description: The like was not removed
+ */router.put(
   "/post/unlike/:id",
   authMiddleware,
   (req: Request, res: Response) => {
