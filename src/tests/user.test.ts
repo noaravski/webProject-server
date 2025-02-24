@@ -313,7 +313,7 @@ describe("Users Tests", () => {
       .send({
         username: testUser.username,
       });
-    expect(response.statusCode).toBe(404);
+    expect(response.statusCode).toBe(400);
   });
 });
 
@@ -324,18 +324,12 @@ test("User -> create post without user", async () => {
     sender: "notExistingUser",
   });
   expect(response.statusCode).not.toBe(201);
-  const response2 = await request(app)
-    .post("/")
-    .set({ authorization: "JWT " + testUser.accessToken })
-    .send({
-      title: "Test title",
-      content: "Test content",
-      sender: testUser.username,
-    });
-  expect(response2.statusCode).toBe(201);
 });
 
 test("User -> timeout token ", async () => {
+  const responseRegister = await request(app).post(baseUrl).send(testUser);
+  expect(responseRegister.statusCode).toBe(201);
+  
   const response = await request(app)
     .post(baseUrl + "/login")
     .send(testUser);

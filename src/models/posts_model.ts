@@ -4,7 +4,7 @@ export interface IPost {
   title: string;
   content: string;
   sender: string;
-  likes?: string[]; // Array of user IDs
+  likes?: string[];
   createdAt?: Date;
 }
 
