@@ -5,7 +5,6 @@ export interface IPost {
   content: string;
   sender: string;
   likes?: string[]; // Array of user IDs
-  starsAvg?: number;
   createdAt?: Date;
 }
 
