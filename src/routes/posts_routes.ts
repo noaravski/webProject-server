@@ -1,5 +1,10 @@
 import express, { Request, Response } from "express";
-import { postController, deletePost } from "../controllers/posts_controller";
+import {
+  postController,
+  deletePost,
+  addLike,
+  removeLike,
+} from "../controllers/posts_controller";
 import { authMiddleware } from "../controllers/user_controller";
 const router = express.Router();
 
@@ -39,7 +44,6 @@ const router = express.Router();
  *         content: This is the content of my first post.
  *         sender: noa
  */
-
 
 /**
  * @swagger
@@ -219,5 +223,17 @@ router.get("/post", (req: Request, res: Response) => {
 router.put("/post/:id", authMiddleware, (req: Request, res: Response) => {
   postController.updateItem(req, res);
 });
+
+router.put("/post/like/:id", authMiddleware, (req: Request, res: Response) => {
+  addLike(req, res);
+});
+
+router.put(
+  "/post/unlike/:id",
+  authMiddleware,
+  (req: Request, res: Response) => {
+    removeLike(req, res);
+  }
+);
 
 export default router;

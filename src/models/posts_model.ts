@@ -4,6 +4,9 @@ export interface IPost {
   title: string;
   content: string;
   sender: string;
+  likes?: string[]; // Array of user IDs
+  starsAvg?: number;
+  createdAt?: Date;
 }
 
 const postSchema = new mongoose.Schema<IPost>({
@@ -17,6 +20,13 @@ const postSchema = new mongoose.Schema<IPost>({
     ref: "Users",
     required: true,
   },
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Users" }], // Array of user IDs
+  starsAvg: { type: Number },
+  createdAt: Date,
+});
+
+postSchema.virtual("likesCount").get(function () {
+  return this.likes.length;
 });
 
 const Posts = mongoose.model<IPost>("Posts", postSchema);

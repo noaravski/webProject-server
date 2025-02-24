@@ -65,7 +65,6 @@ const generateToken = (userId: string): tTokens | null => {
 const login = async (req: Request, res: Response) => {
   const email = req.body.email;
   const password = req.body.password;
-  // const username = req.body.username;
   if (!email || !password) {
     res.status(400).send("Email, username and password are required");
     return;
