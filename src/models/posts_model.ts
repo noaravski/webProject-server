@@ -21,7 +21,6 @@ const postSchema = new mongoose.Schema<IPost>({
     required: true,
   },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Users" }], // Array of user IDs
-  starsAvg: { type: Number },
   createdAt: Date,
 });
 
