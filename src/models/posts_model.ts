@@ -23,10 +23,6 @@ const postSchema = new mongoose.Schema<IPost>({
   createdAt: { type: Date, default: Date.now },
 });
 
-postSchema.virtual("likesCount").get(function () {
-  return this.likes.length;
-});
-
 const Posts = mongoose.model<IPost>("Posts", postSchema);
 
 export default Posts;
