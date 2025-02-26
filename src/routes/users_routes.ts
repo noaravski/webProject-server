@@ -61,6 +61,33 @@ const router = express.Router();
 * @swagger
 * components:
 *   schemas:
+*     UpdateUser:
+*       type: object
+*       required:
+*         - email
+*         - description
+*         - username
+*       properties:
+*         email:
+*           type: string
+*           description: The user email
+*         username:
+*           type: string
+*           description: The user username
+*         description:
+*           type: string
+*           description: The user description
+* 
+*       example:
+*         email: 'bob@gmail.com'
+*         username: 'bob'
+*         description: 'Here you can write about yourself, your favorite movies...'
+*/
+
+/**
+* @swagger
+* components:
+*   schemas:
 *     UserLogin:
 *       type: object
 *       required:
@@ -297,14 +324,14 @@ router.get("/:id", (req: Request, res: Response) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             $ref: '#/components/schemas/UpdateUser'
  *     responses:
  *       200:
  *         description: The updated user
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/User'
+ *               $ref: '#/components/schemas/UpdateUser'
  *       400:
  *         description: User not found or invalid ID supplied
  *       404:

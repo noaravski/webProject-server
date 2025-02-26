@@ -209,7 +209,16 @@ const updateUser = async (req: Request, res: Response) => {
   const id = req.params.id;
   const body = req.body;
   const userExists = await userModel.find({ _id: id });
-  const usernameTaken = await userModel.find({ username: body.username });
+  const usernameTaken = (
+    await userModel.find({ username: body.username })
+  ).filter((user) => user._id.toString() !== id);
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(body.email)) {
+    res.status(400).send("Invalid email format");
+    return;
+  }
+  
   if (body && userExists.length == 1 && usernameTaken.length == 0) {
     try {
       const item = await userModel.findByIdAndUpdate(id, body, {
