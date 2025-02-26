@@ -10,6 +10,7 @@ import {
   googleLogin,
   getUserDetails,
   authMiddleware,
+  getUserPosts,
 } from "../controllers/user_controller";
 
 const router = express.Router();
@@ -375,6 +376,10 @@ router.delete("/:id", (req: Request, res: Response) => {
 
 router.get("/details", authMiddleware, (req: Request, res: Response) => {
   getUserDetails(req, res);
+});
+
+router.get("/posts", authMiddleware, (req: Request, res: Response) => {
+  getUserPosts(req, res);
 });
 
 export default router;

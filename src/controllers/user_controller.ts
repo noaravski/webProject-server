@@ -306,8 +306,23 @@ const getUserDetails = async (req: Request, res: Response) => {
   }
 };
 
+const getUserPosts = async (req: Request, res: Response) => {
+  try {
+    const user = await userModel.findById(req.params.userId);
+    const posts = await postModel.find({ sender: user?.username });
+    if (posts) {
+      res.status(200).send(posts);
+    } else {
+      res.status(404).send("Posts not found");
+    }
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+};
+
 export {
   usersController,
+  getUserPosts,
   createUser,
   updateUser,
   deleteUser,
