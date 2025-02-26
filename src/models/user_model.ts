@@ -6,6 +6,7 @@ export interface IUser {
   password: string;
   _id?: string;
   refreshToken?: string[];
+  description?: string;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -26,6 +27,10 @@ const userSchema = new mongoose.Schema<IUser>({
   refreshToken: {
     type: [String],
     default: [],
+  },
+  description: {
+    type: String,
+    default: "Here you can write about yourself, your favorite movies...",
   },
 });
 
