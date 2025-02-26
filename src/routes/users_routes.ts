@@ -8,103 +8,104 @@ import {
   logout,
   refresh,
   googleLogin,
+  getUserDetails,
+  authMiddleware,
 } from "../controllers/user_controller";
-
 
 const router = express.Router();
 
 /**
-* @swagger
-* tags:
-*   name: User
-*   description: The Authentication API
-*/
+ * @swagger
+ * tags:
+ *   name: User
+ *   description: The Authentication API
+ */
 
 /**
-* @swagger
-* components:
-*   securitySchemes:
-*     bearerAuth:
-*       type: http
-*       scheme: bearer
-*       bearerFormat: JWT
-*/
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
 
 /**
-* @swagger
-* components:
-*   schemas:
-*     User:
-*       type: object
-*       required:
-*         - email
-*         - password
-*         - username
-*       properties:
-*         email:
-*           type: string
-*           description: The user email
-*         username:
-*           type: string
-*           description: The user username
-*         password:
-*           type: string
-*           description: The user password
-* 
-*       example:
-*         email: 'bob@gmail.com'
-*         username: 'bob'
-*         password: '123456'
-*/
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *         - username
+ *       properties:
+ *         email:
+ *           type: string
+ *           description: The user email
+ *         username:
+ *           type: string
+ *           description: The user username
+ *         password:
+ *           type: string
+ *           description: The user password
+ *
+ *       example:
+ *         email: 'bob@gmail.com'
+ *         username: 'bob'
+ *         password: '123456'
+ */
 
 /**
-* @swagger
-* components:
-*   schemas:
-*     UpdateUser:
-*       type: object
-*       required:
-*         - email
-*         - description
-*         - username
-*       properties:
-*         email:
-*           type: string
-*           description: The user email
-*         username:
-*           type: string
-*           description: The user username
-*         description:
-*           type: string
-*           description: The user description
-* 
-*       example:
-*         email: 'bob@gmail.com'
-*         username: 'bob'
-*         description: 'Here you can write about yourself, your favorite movies...'
-*/
+ * @swagger
+ * components:
+ *   schemas:
+ *     UpdateUser:
+ *       type: object
+ *       required:
+ *         - email
+ *         - description
+ *         - username
+ *       properties:
+ *         email:
+ *           type: string
+ *           description: The user email
+ *         username:
+ *           type: string
+ *           description: The user username
+ *         description:
+ *           type: string
+ *           description: The user description
+ *
+ *       example:
+ *         email: 'bob@gmail.com'
+ *         username: 'bob'
+ *         description: 'Here you can write about yourself, your favorite movies...'
+ */
 
 /**
-* @swagger
-* components:
-*   schemas:
-*     UserLogin:
-*       type: object
-*       required:
-*         - email
-*         - password
-*       properties:
-*         email:
-*           type: string
-*           description: The user email
-*         password:
-*           type: string
-*           description: The user password
-* 
-*       example:
-*         email: 'bob@gmail.com'
-*         password: '123456'
-*/
+ * @swagger
+ * components:
+ *   schemas:
+ *     UserLogin:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           description: The user email
+ *         password:
+ *           type: string
+ *           description: The user password
+ *
+ *       example:
+ *         email: 'bob@gmail.com'
+ *         password: '123456'
+ */
 
 /**
  * @swagger
@@ -151,7 +152,6 @@ const router = express.Router();
 router.post("/login", login);
 
 router.post("/login/google", googleLogin);
-
 
 /**
  * @swagger
@@ -244,29 +244,29 @@ router.get("/", (req: Request, res: Response) => {
 });
 
 /**
-* @swagger
-* /user/:
-*   post:
-*     summary: registers a new user
-*     tags: [User]
-*     requestBody:
-*       required: true
-*       content:
-*         application/json:
-*           schema:
-*             $ref: '#/components/schemas/User'
-*     responses:
-*       201:
-*         description: The new user
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/User'
-*       400:
-*         description: User already exists or missing fields!
-*       500:
-*         description: Server error
-*/
+ * @swagger
+ * /user/:
+ *   post:
+ *     summary: registers a new user
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       201:
+ *         description: The new user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: User already exists or missing fields!
+ *       500:
+ *         description: Server error
+ */
 router.post("/", (req: Request, res: Response) => {
   createUser(req, res);
 });
@@ -299,7 +299,7 @@ router.post("/", (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-router.get("/:id", (req: Request, res: Response) => {
+router.get("/", (req: Request, res: Response) => {
   usersController.getItemById(req, res);
 });
 
@@ -371,6 +371,10 @@ router.put("/:id", (req: Request, res: Response) => {
  */
 router.delete("/:id", (req: Request, res: Response) => {
   deleteUser(req, res);
+});
+
+router.get("/details", authMiddleware, (req: Request, res: Response) => {
+  getUserDetails(req, res);
 });
 
 export default router;

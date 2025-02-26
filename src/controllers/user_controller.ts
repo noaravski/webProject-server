@@ -220,7 +220,7 @@ const updateUser = async (req: Request, res: Response) => {
     res.status(400).send("Invalid email format");
     return;
   }
-  
+
   if (body && userExists.length == 1 && usernameTaken.length == 0) {
     try {
       const item = await userModel.findByIdAndUpdate(id, body, {
@@ -287,6 +287,25 @@ const googleLogin = async (req: Request, res: Response) => {
   }
 };
 
+const getUserDetails = async (req: Request, res: Response) => {
+  try {
+    const user = await userModel.findById(req.params.userId);
+
+    if (user) {
+      const userDetails = {
+        username: user.username,
+        email: user.email,
+        description: user.description,
+      };
+      res.status(200).send(userDetails);
+    } else {
+      res.status(404).send("User details was not found");
+    }
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+};
+
 export {
   usersController,
   createUser,
@@ -296,4 +315,5 @@ export {
   logout,
   refresh,
   googleLogin,
+  getUserDetails,
 };
