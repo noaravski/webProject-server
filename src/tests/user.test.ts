@@ -313,6 +313,53 @@ describe("Users Tests", () => {
       .send({
         username: testUser.username,
       });
-    expect(response.statusCode).toBe(404);
+    expect(response.statusCode).toBe(400);
   });
+});
+
+test("User -> create post without user", async () => {
+  const response = await request(app).post("/").send({
+    title: "Test title",
+    content: "Test content",
+    sender: "notExistingUser",
+  });
+  expect(response.statusCode).not.toBe(201);
+});
+
+test("User -> timeout token ", async () => {
+  const responseRegister = await request(app).post(baseUrl).send(testUser);
+  expect(responseRegister.statusCode).toBe(201);
+  
+  const response = await request(app)
+    .post(baseUrl + "/login")
+    .send(testUser);
+  expect(response.statusCode).toBe(200);
+  testUser.accessToken = response.body.accessToken;
+  testUser.refreshToken = response.body.refreshToken;
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+  const response2 = await request(app)
+    .post("/")
+    .set({ authorization: "JWT " + testUser.accessToken })
+    .send({
+      title: "Test Post",
+      content: "Test Content",
+      sender: "abcedfg",
+    });
+  expect(response2.statusCode).not.toBe(201);
+  const response3 = await request(app)
+    .post(baseUrl + "/refresh")
+    .send({
+      refreshToken: testUser.refreshToken,
+    });
+  expect(response3.statusCode).toBe(200);
+  testUser.accessToken = response3.body.accessToken;
+  const response4 = await request(app)
+    .post("/")
+    .set({ authorization: "JWT " + testUser.accessToken })
+    .send({
+      title: "Test Post",
+      content: "Test Content",
+      sender: "abcdefg",
+    });
+  expect(response4.statusCode).toBe(201);
 });

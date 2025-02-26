@@ -5,6 +5,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
+import commentModel from "../models/comments_model";
+import postModel from "../models/posts_model";
 
 const usersController = new BaseController<IUser>(userModel);
 
@@ -70,7 +72,7 @@ const login = async (req: Request, res: Response) => {
   const email = req.body.email;
   const password = req.body.password;
   if (!email || !password) {
-    res.status(400).send("Email and password are required");
+    res.status(400).send("Email, username and password are required");
     return;
   }
   const user = await userModel.findOne({ email: email });
@@ -234,6 +236,8 @@ const deleteUser = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
     const user = await userModel.findById(id);
+    await commentModel.deleteMany({ sender: user.username });
+    await postModel.deleteMany({ sender: user.username });
     if (user) {
       await user.deleteOne();
       res.status(200).send("User deleted");

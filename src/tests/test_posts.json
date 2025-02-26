@@ -1,0 +1,12 @@
+[
+    {
+        "title": "Test1",
+        "content": "This is a test post no. 1",
+        "sender": "noa"
+    },
+    {
+        "title": "Test2",
+        "content": "This is a test post no. 2",
+        "sender": "noa"
+    }
+]
