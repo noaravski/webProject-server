@@ -19,8 +19,8 @@ const postSchema = new mongoose.Schema<IPost>({
     ref: "Users",
     required: true,
   },
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Users" }], // Array of user IDs
-  createdAt: Date,
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Users" }],
+  createdAt: { type: Date, default: Date.now },
 });
 
 postSchema.virtual("likesCount").get(function () {

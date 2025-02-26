@@ -23,11 +23,12 @@ const deletePost = async (req: Request, res: Response) => {
 };
 
 const addLike = async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const postId = req.params.id;
+
   try {
-    const post = await postModel.findById(id);
+    const post = await postModel.findById(postId);
     if (post) {
-      post.likes.push(req.body.userId);
+      post.likes.push(req.params.userId);
       await post.save();
       res.status(200).send("Like added");
     } else {
@@ -43,7 +44,7 @@ const removeLike = async (req: Request, res: Response) => {
   try {
     const post = await postModel.findById(id);
     if (post) {
-      post.likes = post.likes.filter((like) => like !== req.body.userId);
+      post.likes = post.likes.filter((like) => like != req.params.userId);
       await post.save();
       res.status(200).send("Like Removed");
     } else {
@@ -54,4 +55,21 @@ const removeLike = async (req: Request, res: Response) => {
   }
 };
 
-export { postController, deletePost, addLike, removeLike };
+const isLiked = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  try {
+    const post = await postModel.findById(id);
+    if (post) {
+      const isLikedByUser = post.likes.includes(req.params.userId);
+      res.status(200).json({ isLiked: isLikedByUser });
+      return;
+    } else {
+      res.status(404).send("Post was not found");
+    }
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+};
+
+
+export { postController, deletePost, addLike, removeLike, isLiked };

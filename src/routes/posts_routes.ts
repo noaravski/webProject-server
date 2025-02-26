@@ -4,6 +4,7 @@ import {
   deletePost,
   addLike,
   removeLike,
+  isLiked,
 } from "../controllers/posts_controller";
 import { authMiddleware } from "../controllers/user_controller";
 const router = express.Router();
@@ -225,7 +226,6 @@ router.put("/post/:id", authMiddleware, (req: Request, res: Response) => {
   postController.updateItem(req, res);
 });
 
-
 /**
  * @swagger
  * /post/like/{id}:
@@ -273,11 +273,20 @@ router.put("/post/like/:id", authMiddleware, (req: Request, res: Response) => {
  *         description: The like was removed successfully
  *       400:
  *         description: The like was not removed
- */router.put(
+ */
+router.put(
   "/post/unlike/:id",
   authMiddleware,
   (req: Request, res: Response) => {
     removeLike(req, res);
+  }
+);
+
+router.get(
+  "/post/isliked/:id",
+  authMiddleware,
+  (req: Request, res: Response) => {
+    isLiked(req, res);
   }
 );
 
