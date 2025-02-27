@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
+import path from "path";
+import fs from 'fs';
 import bodyParser from "body-parser";
 import express, { Express } from "express";
 import postsRoute from "./routes/posts_routes";
@@ -8,8 +10,31 @@ import commentsRoute from "./routes/comments_routes";
 import userRoutes from "./routes/users_routes";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
+import { uploadMiddleware } from './middleware/uploadService'
+import multer from 'multer';
 
 const app = express();
+
+// if (process.env.NODE_ENV == 'test') {
+//   dotenv.config({ path: '../.test.env' })
+// } else {
+//   dotenv.config()
+// }
+
+const uploadsPath = path.join(__dirname, "config/uploads");
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true });
+}
+
+app.use("/api/upload", express.static(uploadsPath));
+
+app.post("/api/upload", uploadMiddleware, (req, res) => {
+  console.log(req.body.file);
+  res.status(200).json({ message: "File uploaded successfully" });
+});
+
+
+app.use(uploadMiddleware);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
