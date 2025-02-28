@@ -41,7 +41,7 @@ type tTokens = {
   refreshToken: string;
 };
 
-const generateToken = (userId: string): tTokens | null => {
+const generateToken = (userId: string, username: string): tTokens | null => {
   console.log("refresh token expires in: ", process.env.REFRESH_TOKEN_EXPIRES);
 
   const random = Math.random().toString();
@@ -53,6 +53,7 @@ const generateToken = (userId: string): tTokens | null => {
   const accessToken = jwt.sign(
     {
       _id: userId,
+      username: username,
       random: random,
     },
     process.env.TOKEN_SECRET,
@@ -62,6 +63,7 @@ const generateToken = (userId: string): tTokens | null => {
   const refreshToken = jwt.sign(
     {
       _id: userId,
+      username: username,
       random: random,
     },
     process.env.TOKEN_SECRET,
@@ -91,7 +93,7 @@ const login = async (req: Request, res: Response) => {
     return;
   }
   const userId: string = user._id.toString();
-  const tokens = generateToken(userId);
+  const tokens = generateToken(userId, user.username);
   if (!tokens) {
     res.status(500).send("Server Error");
     return;
@@ -109,6 +111,7 @@ const login = async (req: Request, res: Response) => {
 
 type TokenPayload = {
   _id: string;
+  username: string;
 };
 
 const logout = async (req: Request, res: Response) => {
@@ -172,7 +175,7 @@ const refresh = async (req: Request, res: Response) => {
         return;
       }
       //generate a new access token
-      const newTokens = generateToken(user._id.toString());
+      const newTokens = generateToken(user._id.toString(), user.username);
       //delete the old refresh token
       user.refreshToken = user.refreshToken.filter((t) => t !== refreshToken);
 
@@ -208,6 +211,7 @@ export const authMiddleware = (
       return;
     }
     req.params.userId = (payload as TokenPayload)._id;
+    req.params.username = (payload as TokenPayload).username;
     next();
   });
 };
@@ -283,7 +287,7 @@ const googleLogin = async (req: Request, res: Response) => {
         password: "google-signin",
       });
     }
-    const tokens = generateToken(user._id);
+    const tokens = generateToken(user._id, user.username);
     res.status(200).send(tokens);
     return;
   } catch (err) {
