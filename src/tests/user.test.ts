@@ -319,7 +319,6 @@ describe("Users Tests", () => {
 
 test("User -> create post without user", async () => {
   const response = await request(app).post("/").send({
-    title: "Test title",
     content: "Test content",
     sender: "notExistingUser",
   });
@@ -341,7 +340,6 @@ test("User -> timeout token ", async () => {
     .post("/")
     .set({ authorization: "JWT " + testUser.accessToken })
     .send({
-      title: "Test Post",
       content: "Test Content",
       sender: "abcedfg",
     });
@@ -357,7 +355,6 @@ test("User -> timeout token ", async () => {
     .post("/")
     .set({ authorization: "JWT " + testUser.accessToken })
     .send({
-      title: "Test Post",
       content: "Test Content",
       sender: "abcdefg",
     });

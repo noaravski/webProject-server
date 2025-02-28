@@ -44,7 +44,6 @@ beforeAll(async () => {
       .set("authorization", "JWT " + testUser.refreshToken)
       .send(post);
     expect(response.statusCode).toBe(201);
-    expect(response.body.title).toBe(post.title);
     expect(response.body.content).toBe(post.content);
     post._id = response.body._id;
   }

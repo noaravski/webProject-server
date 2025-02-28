@@ -23,16 +23,12 @@ const router = express.Router();
  *     Post:
  *       type: object
  *       required:
- *         - title
  *         - content
  *         - sender
  *       properties:
  *         _id:
  *           type: string
  *           description: The auto-generated id of the post
- *         title:
- *           type: string
- *           description: The title of the post
  *         content:
  *           type: string
  *           description: The content of the post
@@ -41,15 +37,16 @@ const router = express.Router();
  *           description: The sender of the post
  *       example:
  *         _id: 245234t234234r234r23f4
- *         title: My First Post
  *         content: This is the content of my first post.
  *         sender: noa
  *         likes: [245234t234234r234r23f4]
  */
 
+
+
 /**
  * @swagger
- * /:
+ * /posts:
  *   get:
  *     summary: Returns the list of all the posts
  *     description: Retrieve a list of all posts
@@ -66,13 +63,13 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.get("/", (req: Request, res: Response) => {
+router.get("/posts", (req: Request, res: Response) => {
   postController.getAllItems(req, res);
 });
 
 /**
  * @swagger
- * /:
+ * /post:
  *   post:
  *     summary: Creates a new post
  *     description: Create a new post
@@ -97,7 +94,7 @@ router.get("/", (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-router.post("/", authMiddleware, async (req: Request, res: Response) => {
+router.post("/post", authMiddleware, async (req: Request, res: Response) => {
   postController.createItem(req, res);
 });
 

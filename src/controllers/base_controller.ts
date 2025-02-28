@@ -49,9 +49,11 @@ class BaseController<T> {
 
   async createItem(req: Request, res: Response) {
     const body = req.body;
+
     if (body) {
       try {
-        const item = await this.model.create(body);
+        console.log(req.params);
+        const item = await this.model.create({...body, sender: req.params.username});
         res.status(201).send(item);
       } catch (error) {
         res.status(400).send(error);
