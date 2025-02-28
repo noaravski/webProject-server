@@ -22,13 +22,10 @@ app.use(cors());
 //   dotenv.config()
 // }
 
-const uploadsPath = path.join(__dirname, "uploads");
+const uploadsPath = path.join(__dirname, "middleware/uploads");
 if (!fs.existsSync(uploadsPath)) {
   fs.mkdirSync(uploadsPath, { recursive: true });
 }
-
-
-
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -45,10 +42,6 @@ app.use("/", postsRoute);
 app.use("/", commentsRoute);
 app.use("/user", userRoutes);
 app.use("/", fileRoutes);
-
-
-
-
 
 
 const options = {

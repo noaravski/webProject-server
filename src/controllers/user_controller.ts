@@ -7,6 +7,7 @@ import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
 import commentModel from "../models/comments_model";
 import postModel from "../models/posts_model";
+import { generateUsersLibrary } from "../middleware/fileService";
 
 const usersController = new BaseController<IUser>(userModel);
 
@@ -21,7 +22,11 @@ const createUser = async (req: Request, res: Response) => {
         username: body.username,
         email: body.email,
         password: hashedPassword,
+        profilePic: body.profilePic,
       });
+
+      generateUsersLibrary(user._id);
+
       res.status(201).send(user);
     } catch (error) {
       res.status(500).send(error);

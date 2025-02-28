@@ -1,13 +1,13 @@
 import multer from "multer";
 import path from "path";
 
-
 export const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "uploads"));
+    const userId = req.params.userId;
+    cb(null, path.join(__dirname, "uploads", userId));
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${file.originalname}`;
+    const uniqueSuffix = `${file.originalname}`;
     cb(null, uniqueSuffix);
   },
 });
