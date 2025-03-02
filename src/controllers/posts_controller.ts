@@ -5,6 +5,15 @@ import { Request, Response } from "express";
 
 const postController = new BaseController<IPost>(postModel);
 
+const createPost = async (body: IPost) => {
+  try {
+    const newPost = new postModel(body);
+    const savedPost = await newPost.save();
+    return true;
+  } catch (err) {
+    return false;}
+};
+
 // Delete post and all comments associated with it
 const deletePost = async (req: Request, res: Response) => {
   const id = req.params.id;
@@ -71,5 +80,4 @@ const isLiked = async (req: Request, res: Response) => {
   }
 };
 
-
-export { postController, deletePost, addLike, removeLike, isLiked };
+export { postController, deletePost, addLike, removeLike, isLiked, createPost };
