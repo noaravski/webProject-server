@@ -2,6 +2,7 @@ import postModel, { IPost } from "../models/posts_model";
 import commentModel from "../models/comments_model";
 import BaseController from "./base_controller";
 import { Request, Response } from "express";
+import { downloadBase64Image, generateDescForPostWithAi, generatePostWithAi, subjectsForPost } from "../services/aiService";
 
 const postController = new BaseController<IPost>(postModel);
 
@@ -71,5 +72,18 @@ const isLiked = async (req: Request, res: Response) => {
   }
 };
 
+const createPostGeneratedByAI = async () => {
+  const randomIndex = Math.floor(Math.random() * subjectsForPost.length);
+  const postSubject: string = subjectsForPost[randomIndex];
+  const descForPost = await generateDescForPostWithAi(postSubject);
+  const imagePost = await generatePostWithAi(descForPost);
+  const postDate = new Date().getTime();
+  const fileName = `${postSubject}_${postDate}.png`;
+  downloadBase64Image(imagePost, fileName);
 
-export { postController, deletePost, addLike, removeLike, isLiked };
+  return postModel.create({ content: descForPost, sender: "AI", image: fileName, createdAt: new Date(postDate) });
+}
+
+export { postController, deletePost, addLike, removeLike, isLiked, createPostGeneratedByAI };
+
+
