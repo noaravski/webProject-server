@@ -38,7 +38,7 @@ app.use("/", postsRoute);
 app.use("/", commentsRoute);
 app.use("/user", userRoutes);
 app.use("/", fileRoutes);
-
+app.use('/images', express.static(path.join(__dirname, '../uploads')));
 
 const options = {
   definition: {

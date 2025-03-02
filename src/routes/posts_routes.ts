@@ -5,7 +5,8 @@ import {
   addLike,
   removeLike,
   isLiked,
-  createPost
+  createPost,
+  getAllPosts
 } from "../controllers/posts_controller";
 import { authMiddleware } from "../controllers/user_controller";
 const router = express.Router();
@@ -65,7 +66,7 @@ const router = express.Router();
  *         description: Server error
  */
 router.get("/posts", (req: Request, res: Response) => {
-  postController.getAllItems(req, res);
+  getAllPosts(req, res);
 });
 
 /**
