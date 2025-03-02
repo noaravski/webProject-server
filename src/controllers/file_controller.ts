@@ -1,0 +1,30 @@
+import { Request, Response } from "express";
+import { createPost } from "./posts_controller";
+
+const uploadImage = async (req: Request, res: Response) => {
+  if (req.file) {
+    res.status(200).send("File uploaded successfully - " + req.file.filename);
+  } else {
+    res.status(400).send("No file uploaded.");
+  }
+};
+
+const uploadImageToPost = async (req: Request, res: Response) => {
+  try {
+    if (req.file) {
+      await createPost({
+        ...req.body,
+        sender: req.params.username,
+        imageUrl: req.file.filename,
+      });
+      res.status(200).send("File uploaded successfully - " + req.file.filename);
+    } else {
+      res.status(400).send("No file uploaded.");
+    }
+  } catch (error) {
+    console.error("Error creating post:", error);
+    res.status(500).send("Internal server error");
+  }
+};
+
+export { uploadImage, uploadImageToPost };
