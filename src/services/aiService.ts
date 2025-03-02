@@ -5,7 +5,7 @@ const path = require('path');
 
 
 export const openai = new OpenAI({
-    apiKey: config.OPEN_AI_KEY
+    apiKey: config.OPEN_AI_SECRET
 });
 
 export const subjectsForPost = [
