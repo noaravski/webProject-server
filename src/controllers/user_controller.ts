@@ -110,7 +110,7 @@ type TokenPayload = {
 };
 
 const logout = async (req: Request, res: Response) => {
-  const refreshToken = req.body.refreshToken;
+  const refreshToken = req.headers.authorization?.split(" ")?.[1];
   if (!refreshToken) {
     res.status(400).send("refresh token is required");
     return;
@@ -142,7 +142,8 @@ const logout = async (req: Request, res: Response) => {
 };
 
 const refresh = async (req: Request, res: Response) => {
-  const refreshToken = req.body.refreshToken;
+  const authHeaders = req.headers.authorization;
+  const refreshToken = authHeaders && authHeaders.split(" ")[1];
   if (!refreshToken) {
     res.status(400).send("refresh token is required");
     return;
