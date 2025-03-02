@@ -5,6 +5,8 @@ import {
   addLike,
   removeLike,
   isLiked,
+  createPost,
+  getAllPosts
 } from "../controllers/posts_controller";
 import { authMiddleware } from "../controllers/user_controller";
 const router = express.Router();
@@ -64,7 +66,7 @@ const router = express.Router();
  *         description: Server error
  */
 router.get("/posts", (req: Request, res: Response) => {
-  postController.getAllItems(req, res);
+  getAllPosts(req, res);
 });
 
 /**
@@ -95,7 +97,8 @@ router.get("/posts", (req: Request, res: Response) => {
  *         description: Server error
  */
 router.post("/post", authMiddleware, async (req: Request, res: Response) => {
-  postController.createItem(req, res);
+  // postController.createItem(req, res);
+  // createPost(req, res); 
 });
 
 /**

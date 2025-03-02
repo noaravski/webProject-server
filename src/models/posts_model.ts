@@ -5,6 +5,7 @@ export interface IPost {
   sender: string;
   likes?: string[];
   createdAt?: Date;
+  imageUrl?: string;
 }
 
 const postSchema = new mongoose.Schema<IPost>({
@@ -16,6 +17,10 @@ const postSchema = new mongoose.Schema<IPost>({
   },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Users" }],
   createdAt: { type: Date, default: Date.now },
+  imageUrl: {
+    type: String,
+    required: true,
+  },
 });
 
 const Posts = mongoose.model<IPost>("Posts", postSchema);
