@@ -79,7 +79,7 @@ class BaseController<T> {
   async updateItem(req: Request, res: Response) {
     const id = req.params.id;
     const body = req.body;
-    const userExists = await userModel.find({ username: body.sender });
+    const userExists = await userModel.find({ username: req.params.username });
     if (body && userExists.length == 1) {
       const item = await this.model.findByIdAndUpdate(id, body, {
         new: true,
