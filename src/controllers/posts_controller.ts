@@ -7,11 +7,13 @@ const postController = new BaseController<IPost>(postModel);
 
 const createPost = async (body: IPost) => {
   try {
+    console.log(body);
     const newPost = new postModel(body);
     const savedPost = await newPost.save();
     return true;
   } catch (err) {
-    return false;}
+    return false;
+  }
 };
 
 // Delete post and all comments associated with it
