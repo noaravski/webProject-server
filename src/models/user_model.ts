@@ -4,13 +4,14 @@ export interface IUser {
   email: string;
   username: string;
   password: string;
-  _id?: string;
+  // _id?: mongoose.Schema.Types.ObjectId;
   refreshToken?: string[];
   description?: string;
   profilePic?: string;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
+
   email: {
     type: String,
     required: true,
@@ -35,7 +36,7 @@ const userSchema = new mongoose.Schema<IUser>({
   },
   profilePic: {
     type: String,
-    // default: "../../images/noProfilePic.png",
+    default: "../../images/noProfilePic.png",
   },
 });
 

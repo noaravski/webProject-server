@@ -7,25 +7,29 @@ import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
 import commentModel from "../models/comments_model";
 import postModel from "../models/posts_model";
-import { generateUsersLibrary } from "../middleware/fileService";
-
+import { updateUserDir } from "../middleware/fileService";
+import mongoose from "mongoose";
+import path from "path";
 const usersController = new BaseController<IUser>(userModel);
 
 const createUser = async (req: Request, res: Response) => {
   const body = req.body;
+
   const userExists = await userModel.find({ username: body.username });
   if (body && userExists.length == 0) {
     try {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(body.password, salt);
+
       const user = await userModel.create({
         username: body.username,
         email: body.email,
         password: hashedPassword,
-        profilePic: body.profilePic,
+        profilePic: req.file.filename,
       });
 
-      generateUsersLibrary(user._id);
+      const userId = user._id.toString();
+      updateUserDir(userId, req.file);
 
       res.status(201).send(user);
     } catch (error) {
@@ -93,7 +97,7 @@ const login = async (req: Request, res: Response) => {
     return;
   }
   const userId: string = user._id.toString();
-  const tokens = generateToken(userId, user.username);
+  const tokens = generateToken(userId.toString(), user.username);
   if (!tokens) {
     res.status(500).send("Server Error");
     return;
@@ -287,7 +291,7 @@ const googleLogin = async (req: Request, res: Response) => {
         password: "google-signin",
       });
     }
-    const tokens = generateToken(user._id, user.username);
+    const tokens = generateToken(user._id.toString(), user.username);
     res.status(200).send(tokens);
     return;
   } catch (err) {
@@ -301,12 +305,33 @@ const getUserDetails = async (req: Request, res: Response) => {
     const user = await userModel.findById(req.params.userId);
 
     if (user) {
-      const userDetails = {
-        username: user.username,
-        email: user.email,
-        description: user.description,
-      };
-      res.status(200).send(userDetails);
+      res.status(200).send(user);
+    }
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+};
+
+const getProfilePicUrl = async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  try {
+    const user = await userModel.findById(id);
+
+    if (user) {
+      res.status(200).send({ id: user._id, profilePic: user.profilePic });
+    }
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+};
+
+const idBySender = async (req: Request, res: Response) => {
+  try {
+    const user = await userModel.find({ username: req.params.sender });
+
+    if (user) {
+      res.status(200).send(user[0]._id);
     } else {
       res.status(404).send("User details was not found");
     }
@@ -340,4 +365,6 @@ export {
   refresh,
   googleLogin,
   getUserDetails,
+  idBySender,
+  getProfilePicUrl,
 };

@@ -26,6 +26,7 @@ const getAllPosts = async (req: Request, res: Response) => {
       return {
         ...post.toObject(),
         userId: userId,
+        // username: user ? user.username : null,
         imageUrl: userId ? `/${userId}/${post.imageUrl}` : null,
       };
       })

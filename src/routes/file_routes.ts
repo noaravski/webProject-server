@@ -2,7 +2,10 @@ import express from "express";
 import { uploadMiddleware } from "../middleware/uploadService";
 import { authMiddleware } from "../controllers/user_controller";
 import { createPost } from "../controllers/posts_controller";
-import { uploadImage, uploadImageToPost } from "../controllers/file_controller";
+import {
+  uploadImage,
+  uploadImageToPost,
+} from "../controllers/file_controller";
 const router = express.Router();
 
 /**
@@ -77,5 +80,7 @@ router.post(
 router.post("/api/post", authMiddleware, uploadMiddleware, async (req, res) => {
   uploadImageToPost(req, res);
 });
+
+
 
 export default router;

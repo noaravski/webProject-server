@@ -52,7 +52,7 @@ class BaseController<T> {
 
     if (body) {
       try {
-        const item = await this.model.create({...body, sender: req.params.username});
+        const item = await this.model.create({...body, sender: req.params.username, senderId: req.params.userId});
         res.status(201).send(item);
       } catch (error) {
         res.status(400).send(error);

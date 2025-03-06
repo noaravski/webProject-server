@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { createPost } from "./posts_controller";
+import userModel from "../models/user_model";
 
 const uploadImage = async (req: Request, res: Response) => {
   if (req.file) {
@@ -12,9 +13,12 @@ const uploadImage = async (req: Request, res: Response) => {
 const uploadImageToPost = async (req: Request, res: Response) => {
   try {
     if (req.file) {
+      const user = await userModel.findOne({ username: req.params.username });
       await createPost({
         ...req.body,
         sender: req.params.username,
+        userId: req.params.userId,
+        profilePic: `${req.params.userId}/${user.profilePic}`,
         imageUrl: req.file.filename,
       });
       res.status(200).send("File uploaded successfully - " + req.file.filename);
@@ -26,5 +30,7 @@ const uploadImageToPost = async (req: Request, res: Response) => {
     res.status(500).send("Internal server error");
   }
 };
+
+
 
 export { uploadImage, uploadImageToPost };
