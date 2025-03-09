@@ -18,7 +18,7 @@ const uploadImageToPost = async (req: Request, res: Response) => {
         ...req.body,
         sender: req.params.username,
         userId: req.params.userId,
-        profilePic: `${req.params.userId}/${user.profilePic}`,
+        profilePic: user.profilePic,
         imageUrl: req.file.filename,
       });
       res.status(200).send("File uploaded successfully - " + req.file.filename);

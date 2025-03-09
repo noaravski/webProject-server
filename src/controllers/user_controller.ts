@@ -222,24 +222,59 @@ export const authMiddleware = (
 
 const updateUser = async (req: Request, res: Response) => {
   const id = req.params.id;
+  const oldUsername = req.params.username;
   const body = req.body;
   const userExists = await userModel.find({ _id: id });
   const usernameTaken = (
     await userModel.find({ username: body.username })
   ).filter((user) => user._id.toString() !== id);
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(body.email)) {
-    res.status(400).send("Invalid email format");
-    return;
-  }
-
+  console.log(usernameTaken);
   if (body && userExists.length == 1 && usernameTaken.length == 0) {
     try {
-      const item = await userModel.findByIdAndUpdate(id, body, {
-        new: true,
-      });
+      let item;
+      console.log(body);
+      console.log(req.params);
+      console.log(oldUsername);
+      if (req.file !== undefined) {
+        item = await userModel.findByIdAndUpdate(
+          id,
+          { ...body, profilePic: req.file.filename },
+          {
+            new: true,
+          }
+        );
+        await postModel.updateMany(
+          { sender: oldUsername },
+          { $set: { profilePic: req.file.filename, sender: body.username } }
+        );
+        await commentModel.updateMany(
+          { sender: oldUsername },
+          { $set: { sender: body.username } }
+        );
+      } else {
+        item = await userModel.findByIdAndUpdate(
+          id,
+          { ...body },
+          {
+            new: true,
+          }
+        );
+        await postModel.updateMany(
+          { sender: oldUsername },
+          { $set: { sender: body.username } }
+        );
+      }
+
       if (item) {
+        const userId = item._id.toString();
+        updateUserDir(userId, req.file);
+
+        item.refreshToken = [];
+        const tokens = generateToken(item._id.toString(), item.username);
+        if (tokens) {
+          item.refreshToken.push(tokens.refreshToken);
+          await item.save();
+        }
         res.status(200).send(item);
       } else {
         res.status(404).send("Item not found");

@@ -343,9 +343,14 @@ router.get("/", (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-router.put("/:id", (req: Request, res: Response) => {
-  updateUser(req, res);
-});
+router.put(
+  "/:id",
+  uploadMiddleware,
+  authMiddleware,
+  (req: Request, res: Response) => {
+    updateUser(req, res);
+  }
+);
 
 /**
  * @swagger

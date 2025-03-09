@@ -4,14 +4,12 @@ export interface IUser {
   email: string;
   username: string;
   password: string;
-  // _id?: mongoose.Schema.Types.ObjectId;
   refreshToken?: string[];
   description?: string;
   profilePic?: string;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
-
   email: {
     type: String,
     required: true,
