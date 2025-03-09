@@ -263,6 +263,10 @@ const updateUser = async (req: Request, res: Response) => {
           { sender: oldUsername },
           { $set: { sender: body.username } }
         );
+        await commentModel.updateMany(
+          { sender: oldUsername },
+          { $set: { sender: body.username } }
+        );
       }
 
       if (item) {
