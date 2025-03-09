@@ -13,11 +13,11 @@ const uploadImage = async (req: Request, res: Response) => {
 const uploadImageToPost = async (req: Request, res: Response) => {
   try {
     if (req.file) {
-      const user = await userModel.findOne({ username: req.params.username });
+      const user = await userModel.findOne({ _id: req.params.userId });
       await createPost({
         ...req.body,
-        sender: req.params.username,
-        userId: req.params.userId,
+        sender: user.username,
+        userId: user._id,
         profilePic: user.profilePic,
         imageUrl: req.file.filename,
       });
