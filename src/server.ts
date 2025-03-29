@@ -12,6 +12,7 @@ import userRoutes from "./routes/users_routes";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
 import fileRoutes from "./routes/file_routes";
+import aiRoutes from "./routes/ai_routes";
 
 const app = express();
 app.use(cors());
@@ -30,6 +31,7 @@ app.use("/", postsRoute);
 app.use("/", commentsRoute);
 app.use("/user", userRoutes);
 app.use("/", fileRoutes);
+app.use("/ai", aiRoutes);
 app.use('/images', express.static(path.join(__dirname, '../uploads')));
 
 const options = {
