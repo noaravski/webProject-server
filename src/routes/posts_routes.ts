@@ -5,6 +5,8 @@ import {
   addLike,
   removeLike,
   isLiked,
+  createPost,
+  getAllPosts
 } from "../controllers/posts_controller";
 import { authMiddleware } from "../controllers/user_controller";
 const router = express.Router();
@@ -64,38 +66,7 @@ const router = express.Router();
  *         description: Server error
  */
 router.get("/posts", (req: Request, res: Response) => {
-  postController.getAllItems(req, res);
-});
-
-/**
- * @swagger
- * /post:
- *   post:
- *     summary: Creates a new post
- *     description: Create a new post
- *     tags: [Posts]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Post'
- *     responses:
- *       201:
- *         description: Post created successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Post'
- *       400:
- *         description: Bad request
- *       500:
- *         description: Server error
- */
-router.post("/post", authMiddleware, async (req: Request, res: Response) => {
-  postController.createItem(req, res);
+  getAllPosts(req, res);
 });
 
 /**
