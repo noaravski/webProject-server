@@ -326,7 +326,7 @@ const googleLogin = async (req: Request, res: Response) => {
       user = await userModel.create({
         email: email,
         username: payload?.name,
-        // imageUrl: payload?.picture,
+        profilePic: payload?.picture,
         password: "google-signin",
       });
     }
