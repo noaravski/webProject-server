@@ -4,9 +4,9 @@ export interface IUser {
   email: string;
   username: string;
   password: string;
-  _id?: string;
   refreshToken?: string[];
   description?: string;
+  profilePic?: string;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema<IUser>({
   description: {
     type: String,
     default: "Here you can write about yourself, your favorite movies...",
+  },
+  profilePic: {
+    type: String,
+    default: "../../images/noProfilePic.png",
   },
 });
 

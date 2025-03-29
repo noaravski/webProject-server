@@ -11,7 +11,10 @@ import {
   getUserDetails,
   authMiddleware,
   getUserPosts,
+  idBySender,
+  getProfilePicUrl,
 } from "../controllers/user_controller";
+import { uploadMiddleware } from "../middleware/uploadService";
 
 const router = express.Router();
 
@@ -268,7 +271,7 @@ router.get("/", (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-router.post("/", (req: Request, res: Response) => {
+router.post("/", uploadMiddleware, async (req: Request, res: Response) => {
   createUser(req, res);
 });
 
@@ -340,9 +343,14 @@ router.get("/", (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-router.put("/:id", (req: Request, res: Response) => {
-  updateUser(req, res);
-});
+router.put(
+  "/:id",
+  uploadMiddleware,
+  authMiddleware,
+  (req: Request, res: Response) => {
+    updateUser(req, res);
+  }
+);
 
 /**
  * @swagger
@@ -376,6 +384,10 @@ router.delete("/:id", (req: Request, res: Response) => {
 
 router.get("/details", authMiddleware, (req: Request, res: Response) => {
   getUserDetails(req, res);
+});
+
+router.get("/profilePic/:id", (req: Request, res: Response) => {
+  getProfilePicUrl(req, res);
 });
 
 router.get("/posts", authMiddleware, (req: Request, res: Response) => {

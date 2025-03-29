@@ -5,6 +5,7 @@ export interface IComments {
   postId: string;
   sender: string;
   createdAt?: Date;
+  senderId: mongoose.Schema.Types.ObjectId;
 }
 
 const commentsSchema = new mongoose.Schema<IComments>({
@@ -17,6 +18,11 @@ const commentsSchema = new mongoose.Schema<IComments>({
     type: String,
     ref: "Users",
     required: true,
+  },
+  senderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Users",
+    required: false,
   },
   content: {
     type: String,

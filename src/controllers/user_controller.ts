@@ -7,21 +7,30 @@ import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
 import commentModel from "../models/comments_model";
 import postModel from "../models/posts_model";
-
+import { updateUserDir } from "../middleware/fileService";
+import mongoose from "mongoose";
+import path from "path";
 const usersController = new BaseController<IUser>(userModel);
 
 const createUser = async (req: Request, res: Response) => {
   const body = req.body;
+
   const userExists = await userModel.find({ username: body.username });
   if (body && userExists.length == 0) {
     try {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(body.password, salt);
+
       const user = await userModel.create({
         username: body.username,
         email: body.email,
         password: hashedPassword,
+        profilePic: req.file.filename,
       });
+
+      const userId = user._id.toString();
+      updateUserDir(userId, req.file);
+
       res.status(201).send(user);
     } catch (error) {
       res.status(500).send(error);
@@ -88,7 +97,7 @@ const login = async (req: Request, res: Response) => {
     return;
   }
   const userId: string = user._id.toString();
-  const tokens = generateToken(userId, user.username);
+  const tokens = generateToken(userId.toString(), user.username);
   if (!tokens) {
     res.status(500).send("Server Error");
     return;
@@ -214,24 +223,63 @@ export const authMiddleware = (
 
 const updateUser = async (req: Request, res: Response) => {
   const id = req.params.id;
+  const oldUsername = req.params.username;
   const body = req.body;
   const userExists = await userModel.find({ _id: id });
   const usernameTaken = (
     await userModel.find({ username: body.username })
   ).filter((user) => user._id.toString() !== id);
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(body.email)) {
-    res.status(400).send("Invalid email format");
-    return;
-  }
-
+  console.log(usernameTaken);
   if (body && userExists.length == 1 && usernameTaken.length == 0) {
     try {
-      const item = await userModel.findByIdAndUpdate(id, body, {
-        new: true,
-      });
+      let item;
+      console.log(body);
+      console.log(req.params);
+      console.log(oldUsername);
+      if (req.file !== undefined) {
+        item = await userModel.findByIdAndUpdate(
+          id,
+          { ...body, profilePic: req.file.filename },
+          {
+            new: true,
+          }
+        );
+        await postModel.updateMany(
+          { sender: oldUsername },
+          { $set: { profilePic: req.file.filename, sender: body.username } }
+        );
+        await commentModel.updateMany(
+          { sender: oldUsername },
+          { $set: { sender: body.username } }
+        );
+      } else {
+        item = await userModel.findByIdAndUpdate(
+          id,
+          { ...body },
+          {
+            new: true,
+          }
+        );
+        await postModel.updateMany(
+          { sender: oldUsername },
+          { $set: { sender: body.username } }
+        );
+        await commentModel.updateMany(
+          { sender: oldUsername },
+          { $set: { sender: body.username } }
+        );
+      }
+
       if (item) {
+        const userId = item._id.toString();
+        updateUserDir(userId, req.file);
+
+        item.refreshToken = [];
+        const tokens = generateToken(item._id.toString(), item.username);
+        if (tokens) {
+          item.refreshToken.push(tokens.refreshToken);
+          await item.save();
+        }
         res.status(200).send(item);
       } else {
         res.status(404).send("Item not found");
@@ -279,11 +327,11 @@ const googleLogin = async (req: Request, res: Response) => {
       user = await userModel.create({
         email: email,
         username: payload?.name,
-        // imageUrl: payload?.picture,
+        profilePic: payload?.picture,
         password: "google-signin",
       });
     }
-    const tokens = generateToken(user._id, user.username);
+    const tokens = generateToken(user._id.toString(), user.username);
     res.status(200).send(tokens);
     return;
   } catch (err) {
@@ -297,12 +345,33 @@ const getUserDetails = async (req: Request, res: Response) => {
     const user = await userModel.findById(req.params.userId);
 
     if (user) {
-      const userDetails = {
-        username: user.username,
-        email: user.email,
-        description: user.description,
-      };
-      res.status(200).send(userDetails);
+      res.status(200).send(user);
+    }
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+};
+
+const getProfilePicUrl = async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  try {
+    const user = await userModel.findById(id);
+
+    if (user) {
+      res.status(200).send({ id: user._id, profilePic: user.profilePic });
+    }
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+};
+
+const idBySender = async (req: Request, res: Response) => {
+  try {
+    const user = await userModel.find({ username: req.params.sender });
+
+    if (user) {
+      res.status(200).send(user[0]._id);
     } else {
       res.status(404).send("User details was not found");
     }
@@ -336,4 +405,6 @@ export {
   refresh,
   googleLogin,
   getUserDetails,
+  idBySender,
+  getProfilePicUrl,
 };
