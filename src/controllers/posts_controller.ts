@@ -26,7 +26,6 @@ const getAllPosts = async (req: Request, res: Response) => {
       return {
         ...post.toObject(),
         userId: userId,
-        // username: user ? user.username : null,
         imageUrl: post.imageUrl
       };
       })
@@ -37,8 +36,6 @@ const getAllPosts = async (req: Request, res: Response) => {
     res.status(400).send(err.message);
   }
 };
-
-
 
 // Delete post and all comments associated with it
 const deletePost = async (req: Request, res: Response) => {

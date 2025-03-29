@@ -71,38 +71,6 @@ router.get("/posts", (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /post:
- *   post:
- *     summary: Creates a new post
- *     description: Create a new post
- *     tags: [Posts]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Post'
- *     responses:
- *       201:
- *         description: Post created successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Post'
- *       400:
- *         description: Bad request
- *       500:
- *         description: Server error
- */
-router.post("/post", authMiddleware, async (req: Request, res: Response) => {
-  // postController.createItem(req, res);
-  // createPost(req, res); 
-});
-
-/**
- * @swagger
  * /post/{id}:
  *   delete:
  *     summary: Deletes a post by id

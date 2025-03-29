@@ -13,16 +13,8 @@ import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUI from "swagger-ui-express";
 import fileRoutes from "./routes/file_routes";
 
-
 const app = express();
 app.use(cors());
-// if (process.env.NODE_ENV == 'test') {
-//   dotenv.config({ path: '../.test.env' })
-// } else {
-//   dotenv.config()
-// }
-
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use((req, res, next) => {
