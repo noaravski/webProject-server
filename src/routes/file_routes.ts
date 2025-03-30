@@ -5,6 +5,7 @@ import { createPost } from "../controllers/posts_controller";
 import {
   uploadImage,
   uploadImageToPost,
+  updateImageToPost,
 } from "../controllers/file_controller";
 const router = express.Router();
 
@@ -79,6 +80,10 @@ router.post(
  */
 router.post("/api/post", authMiddleware, uploadMiddleware, async (req, res) => {
   uploadImageToPost(req, res);
+});
+
+router.put("/api/updatePost/:postId", authMiddleware, uploadMiddleware, async (req, res) => {
+  updateImageToPost(req, res);
 });
 
 

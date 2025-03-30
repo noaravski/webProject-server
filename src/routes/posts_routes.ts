@@ -6,7 +6,7 @@ import {
   removeLike,
   isLiked,
   createPost,
-  getAllPosts
+  getAllPosts,
 } from "../controllers/posts_controller";
 import { authMiddleware } from "../controllers/user_controller";
 const router = express.Router();
@@ -43,8 +43,6 @@ const router = express.Router();
  *         sender: noa
  *         likes: [245234t234234r234r23f4]
  */
-
-
 
 /**
  * @swagger
