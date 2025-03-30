@@ -7,10 +7,10 @@ export const storage = multer.diskStorage({
     let uploadDir;
 
     if (!req.params.userId) {
-      uploadDir = path.join(__dirname, "../../uploads");
+      uploadDir = "./uploads";
     } else {
       const userId = req.params.userId;
-      uploadDir = path.join(__dirname, "../../uploads", userId);
+      uploadDir = path.join("./uploads", userId);
     }
 
     if (!fs.existsSync(uploadDir)) {

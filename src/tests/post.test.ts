@@ -15,11 +15,7 @@ const testUser: IUser = {
   password: "Noaravski123",
 };
 
-type Post = IPost & {
-  _id?: string;
-};
-
-const testPosts: Post[] = testPostsData;
+const testPosts = testPostsData;
 
 beforeAll(async () => {
   console.log("[*] Before post tests run");

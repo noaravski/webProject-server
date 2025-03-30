@@ -16,9 +16,9 @@ const uploadImageToPost = async (req: Request, res: Response) => {
       const user = await userModel.findOne({ _id: req.params.userId });
       await createPost({
         ...req.body,
-        sender: user.username,
-        userId: user._id,
-        profilePic: user.profilePic,
+        sender: user?.username,
+        userId: user?._id,
+        profilePic: user?.profilePic,
         imageUrl: req.file.filename,
       });
       res.status(200).send("File uploaded successfully - " + req.file.filename);

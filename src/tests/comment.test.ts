@@ -17,11 +17,8 @@ const testUser: IUser = {
   password: "Noaravski123",
 };
 
-type Post = IPost & { _id?: string };
-type Comment = IComments & { _id?: string; postId?: string };
-
-const testPosts: Post[] = testPostsData;
-const testComments: Comment[] = testCommentsData;
+const testPosts = testPostsData;
+const testComments = testCommentsData;
 
 beforeAll(async () => {
   console.log("[*] Before comment tests run");

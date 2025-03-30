@@ -7,6 +7,7 @@ export interface IUser {
   refreshToken?: string[];
   description?: string;
   profilePic?: string;
+  _id?: string;
 }
 
 const userSchema = new mongoose.Schema<IUser>({

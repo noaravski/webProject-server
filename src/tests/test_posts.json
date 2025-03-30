@@ -1,10 +1,12 @@
 [
     {
         "content": "This is a test post no. 1",
-        "sender": "noa"
+        "sender": "noa",
+        "_id": ""
     },
     {
         "content": "This is a test post no. 2",
-        "sender": "noa"
+        "sender": "noa",
+        "_id": ""
     }
 ]

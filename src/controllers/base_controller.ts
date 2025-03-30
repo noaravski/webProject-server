@@ -72,7 +72,11 @@ class BaseController<T> {
         res.status(404).send("Item not found");
       }
     } catch (err) {
-      res.status(400).send(err.message);
+      if (err instanceof Error) {
+        res.status(400).send(err.message);
+      } else {
+        res.status(400).send("An unknown error occurred");
+      }
     }
   }
 
