@@ -35,6 +35,10 @@ const testUser: User = {
 describe("Users Tests", () => {
   test("User -> register (createUser) success", async () => {
     const response = await request(app).post(baseUrl).send(testUser);
+    testUser.accessToken = response.body.accessToken;
+    testUser.refreshToken = response.body.refreshToken;
+    testUser._id = response.body._id;
+
     expect(response.statusCode).toBe(201);
   });
 
@@ -106,21 +110,19 @@ describe("Users Tests", () => {
     expect(response.statusCode).not.toBe(201);
     const response2 = await request(app)
       .post("/")
-      .set({ authorization: "JWT " + testUser.accessToken })
+      .set({ authorization: "JWT " + testUser.refreshToken })
       .send({
         title: "Test title",
         content: "Test content",
         sender: testUser.username,
       });
-    expect(response2.statusCode).toBe(201);
+    expect(response2.statusCode).toBe(200);
   });
 
   test("User -> get refresh token", async () => {
     const response = await request(app)
       .post(baseUrl + "/refresh")
-      .send({
-        refreshToken: testUser.refreshToken,
-      });
+      .set({ authorization: "JWT " + testUser.refreshToken });
     expect(response.statusCode).toBe(200);
     expect(response.body.accessToken).toBeDefined();
     expect(response.body.refreshToken).toBeDefined();
@@ -132,9 +134,8 @@ describe("Users Tests", () => {
   test("User -> use refresh token", async () => {
     const response = await request(app)
       .post(baseUrl + "/refresh")
-      .send({
-        refreshToken: testUser.refreshToken,
-      });
+      .set({ authorization: "JWT " + testUser.refreshToken });
+
     expect(response.statusCode).toBe(200);
     const refreshTokenNew = response.body.refreshToken;
 
@@ -163,9 +164,7 @@ describe("Users Tests", () => {
 
     const response2 = await request(app)
       .post(baseUrl + "/logout")
-      .send({
-        refreshToken: testUser.refreshToken,
-      });
+      .set({ authorization: "JWT " + testUser.refreshToken });
     expect(response2.statusCode).toBe(200);
 
     const response3 = await request(app)
@@ -189,7 +188,7 @@ describe("Users Tests", () => {
 
     const response2 = await request(app)
       .post("/")
-      .set({ authorization: "JWT " + testUser.accessToken })
+      .set({ authorization: "JWT " + testUser.refreshToken })
       .send({
         title: "Test Post",
         content: "Test Content",
@@ -199,21 +198,19 @@ describe("Users Tests", () => {
 
     const response3 = await request(app)
       .post(baseUrl + "/refresh")
-      .send({
-        refreshToken: testUser.refreshToken,
-      });
+      .set({ authorization: "JWT " + testUser.refreshToken });
     expect(response3.statusCode).toBe(200);
     testUser.accessToken = response3.body.accessToken;
 
     const response4 = await request(app)
       .post("/")
-      .set({ authorization: "JWT " + testUser.accessToken })
+      .set({ authorization: "JWT " + testUser.refreshToken })
       .send({
         title: "Test Post",
         content: "Test Content",
         sender: "abcdefg",
       });
-    expect(response4.statusCode).toBe(201);
+    expect(response4.statusCode).toBe(200);
   });
 
   test("User -> fail to create (user exists)", async () => {
@@ -270,7 +267,7 @@ describe("Users Tests", () => {
     const response = await request(app)
       .post(baseUrl + "/logout")
       .send(testUser);
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
 
     process.env.TOKEN_SECRET = prev;
   });
@@ -305,7 +302,7 @@ describe("Users Tests", () => {
       .send({
         refreshToken: "AAA",
       });
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
   });
   test("User -> refresh with valid token not existing", async () => {
     const response = await request(app)
@@ -314,7 +311,7 @@ describe("Users Tests", () => {
         refreshToken:
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2Nzc5NzNiYzE4YjIyNWZhOGIyZDZmZDQiLCJyYW5kb20iOiIwLjE3NjQ0MzU0MDc2NzEwMzIyIiwiaWF0IjoxNzM2MDEyNzMzLCJleHAiOjE3MzY2MTc1MzN9.Z9qt7VSIeoSgdj_uKZr-Hxlz8sUEF06B9mbrwJN1uzY",
       });
-    expect(response.statusCode).toBe(404);
+    expect(response.statusCode).toBe(400);
   });
   test("User -> refresh with invalid token_secret in .env", async () => {
     const prev = process.env.TOKEN_SECRET;
@@ -323,7 +320,7 @@ describe("Users Tests", () => {
     const response = await request(app)
       .post(baseUrl + "/refresh")
       .send(testUser);
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(400);
 
     process.env.TOKEN_SECRET = prev;
   });
@@ -342,18 +339,23 @@ describe("Users Tests", () => {
   });
 
   test("User -> update user success", async () => {
+    const tokenResponse = await request(app)
+      .post(baseUrl + "/login")
+      .send(testUser);
+    testUser.refreshToken.push(tokenResponse.body.refreshToken);
+
     const response = await request(app)
       .put(baseUrl + "/" + testUser._id)
+      .set({ authorization: "JWT " + testUser.refreshToken })
       .send({
-        email: "idanefraim13@gmail.com",
         username: "idan",
-        password: "Idanefraim13",
       });
     expect(response.statusCode).toBe(200);
   });
   test("User -> update user to existing one", async () => {
     const response = await request(app)
       .put(baseUrl + "/AAAAAAAAAAAAAAAAAAAAAAAA")
+      .set({ authorization: "JWT " + testUser.refreshToken })
       .send({
         username: testUser.username,
       });

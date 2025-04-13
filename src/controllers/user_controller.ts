@@ -25,11 +25,11 @@ const createUser = async (req: Request, res: Response) => {
         username: body.username,
         email: body.email,
         password: hashedPassword,
-        profilePic: req.file?.filename || "/upload/noProfilePic.png"
+        profilePic: req.file?.filename || "/upload/noProfilePic.png",
       });
 
       const userId = user._id.toString();
-      if(req.file){
+      if (req.file) {
         updateUserDir(userId, req.file);
       }
 
@@ -235,9 +235,6 @@ const updateUser = async (req: Request, res: Response) => {
   if (body && userExists.length == 1 && usernameTaken.length == 0) {
     try {
       let item;
-      console.log(body);
-      console.log(req.params);
-      console.log(oldUsername);
       if (req.file !== undefined) {
         item = await userModel.findByIdAndUpdate(
           id,
@@ -274,8 +271,9 @@ const updateUser = async (req: Request, res: Response) => {
 
       if (item) {
         const userId = item._id.toString();
-        updateUserDir(userId, req.file);
-
+        if (req.file) {
+          updateUserDir(userId, req.file);
+        }
         item.refreshToken = [];
         const tokens = generateToken(item._id.toString(), item.username);
         if (tokens) {
