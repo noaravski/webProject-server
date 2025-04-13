@@ -3,11 +3,7 @@ import { createPost } from "./posts_controller";
 import userModel from "../models/user_model";
 
 const uploadImage = async (req: Request, res: Response) => {
-  if (req.file) {
-    res.status(200).send("File uploaded successfully - " + req.file.filename);
-  } else {
-    res.status(400).send("No file uploaded.");
-  }
+  res.status(200).send("File uploaded successfully - " + req.file.filename);
 };
 
 const uploadImageToPost = async (req: Request, res: Response) => {
