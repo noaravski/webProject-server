@@ -13,6 +13,10 @@ export interface IPost {
 
 const postSchema = new mongoose.Schema<IPost>({
   content: String,
+  title: {
+    type: String,
+    required: false,
+  },
   sender: {
     type: String,
     ref: "Users",

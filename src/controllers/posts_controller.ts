@@ -21,13 +21,13 @@ const getAllPosts = async (req: Request, res: Response) => {
     const posts = await postModel.find();
     const postsWithImageUrl = await Promise.all(
       posts.map(async (post) => {
-      const user = await userModel.findOne({ username: post.sender });
-      const userId = user ? user._id : null;
-      return {
-        ...post.toObject(),
-        userId: userId,
-        imageUrl: post.imageUrl
-      };
+        const user = await userModel.findOne({ username: post.sender });
+        const userId = user ? user._id : null;
+        return {
+          ...post.toObject(),
+          userId: userId,
+          imageUrl: post.imageUrl,
+        };
       })
     );
 

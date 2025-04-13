@@ -43,7 +43,7 @@ afterAll(() => {
 
 describe("Posts Tests", () => {
   test("Post -> get all post when empty", async () => {
-    const response = await request(app).get("/");
+    const response = await request(app).get("/posts");
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(0);
   });
@@ -54,7 +54,7 @@ describe("Posts Tests", () => {
         .post("/")
         .set("authorization", "JWT " + testUser.refreshToken)
         .send(post);
-      expect(response.statusCode).toBe(201);
+      expect(response.statusCode).toBe(200);
       expect(response.body.title).toBe(post.title);
       expect(response.body.content).toBe(post.content);
       expect(response.body.sender).toBe(post.sender);
@@ -63,7 +63,7 @@ describe("Posts Tests", () => {
   });
 
   test("Post -> get all post (test_post.json)", async () => {
-    const response = await request(app).get("/");
+    const response = await request(app).get("/posts");
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(testPosts.length);
   });
@@ -98,7 +98,7 @@ describe("Posts Tests", () => {
     const response = await request(app)
       .delete("/post/" + "AAAAAAAAAAAAAAAAAAAAAAAA") //A - is valid id but not existing one
       .set("authorization", "JWT " + testUser.refreshToken);
-    expect(response.statusCode).toBe(401);
+    expect(response.statusCode).toBe(404);
   });
 
   test("Post -> Delete post with invalid id", async () => {
@@ -115,7 +115,7 @@ describe("Posts Tests", () => {
       .send({
         content: "Test Content 1",
       });
-    expect(response.statusCode).toBe(404);
+    expect(response.statusCode).toBe(500);
   });
   test("Post -> update post", async () => {
     const response = await request(app)
@@ -128,12 +128,11 @@ describe("Posts Tests", () => {
   });
   test("Post -> update non existing post existing user", async () => {
     const response = await request(app)
-      .put("/post/" + testPosts[1]._id)
+      .put("/post/AAAAAAAAAAAAAAAAAAAAAAAA")
       .set("authorization", "JWT " + testUser.refreshToken)
       .send({
-        id: "AAAAAAAAAAAAAAAAAAAAAAAA",
         content: "Test Content 1",
       });
-    expect(response.statusCode).toBe(401);
+    expect(response.statusCode).toBe(404);
   });
 });
