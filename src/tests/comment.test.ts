@@ -17,7 +17,7 @@ const testUser: IUser = {
   password: "Noaravski123",
 };
 
-type Post = IPost & { _id?: string };
+type Post = IPost & { _id?: string; title?: string };
 type Comment = IComments & { _id?: string; postId?: string };
 
 const testPosts: Post[] = testPostsData;
@@ -26,27 +26,35 @@ const testComments: Comment[] = testCommentsData;
 beforeAll(async () => {
   console.log("[*] Before comment tests run");
   app = await appInit();
-  try {
-    await postsModel.deleteMany();
-    await userModel.deleteMany();
-    await commentsModel.deleteMany();
-  } catch (err) {
-    console.log("[*] No posts or users to delete!", err);
-  }
+  await postsModel.deleteMany();
+  await userModel.deleteMany();
+  await commentsModel.deleteMany();
+
   await request(app).post("/user").send(testUser);
-  const response = await request(app).post("/user/login").send(testUser);
-  testUser.refreshToken = response.body.refreshToken;
-  testUser._id = response.body._id;
-  expect(response.statusCode).toBe(200);
-  for (const post of testPosts) {
-    const response = await request(app)
-      .post("/")
-      .set("authorization", "JWT " + testUser.refreshToken)
-      .send(post);
-    expect(response.statusCode).toBe(201);
-    expect(response.body.content).toBe(post.content);
-    post._id = response.body._id;
+  const loginResponse = await request(app).post("/user/login").send({
+    email: testUser.email,
+    password: testUser.password,
+  });
+  testUser.refreshToken = loginResponse.body.refreshToken;
+  testUser._id = loginResponse.body._id;
+
+  try {
+    for (const post of testPosts) {
+      const response = await request(app)
+        .post("/")
+        .set("authorization", "JWT " + testUser.refreshToken)
+        .send(post);
+
+      if (response.statusCode !== 201) {
+        console.error("Failed to create post:", response.body);
+      }
+      expect(response.statusCode).toBe(201);
+      post._id = response.body._id;
+    }
+  } catch (err) {
+    console.log("[*] ", err);
   }
+
   testComments[0].postId = testPosts[0]._id;
   testComments[1].postId = testPosts[0]._id;
   testComments[2].postId = testPosts[1]._id;

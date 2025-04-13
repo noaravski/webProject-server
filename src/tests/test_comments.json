@@ -1,17 +1,14 @@
 [
   {
-    "content": "This is a test comment no. 1",
-    "sender": "noa",
-    "postId": ""
+    "content": "This is the first comment on the first post.",
+    "sender": "noa"
   },
   {
-    "content": "This is a test comment no. 2",
-    "sender": "noa",
-    "postId": ""
+    "content": "This is the second comment on the first post.",
+    "sender": "noa"
   },
   {
-    "content": "This is a test comment no. 3",
-    "sender": "noa",
-    "postId": ""
+    "content": "This is the first comment on the second post.",
+    "sender": "noa"
   }
 ]

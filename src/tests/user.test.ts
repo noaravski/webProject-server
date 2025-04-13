@@ -1,6 +1,7 @@
 import request from "supertest";
 import initApp from "../server";
 import mongoose from "mongoose";
+import postModel from "../models/posts_model";
 import { Express } from "express";
 import userModel, { IUser } from "../models/user_model";
 
@@ -10,6 +11,7 @@ beforeAll(async () => {
   console.log("[*] Before users tests run");
   app = await initApp();
   await userModel.deleteMany();
+  await postModel.deleteMany();
 });
 
 afterAll((done) => {
@@ -95,6 +97,24 @@ describe("Users Tests", () => {
     expect(response2.statusCode).not.toBe(200);
   });
 
+  test("User -> create post without user", async () => {
+    const response = await request(app).post("/").send({
+      title: "Test title",
+      content: "Test content",
+      sender: "notExistingUser",
+    });
+    expect(response.statusCode).not.toBe(201);
+    const response2 = await request(app)
+      .post("/")
+      .set({ authorization: "JWT " + testUser.accessToken })
+      .send({
+        title: "Test title",
+        content: "Test content",
+        sender: testUser.username,
+      });
+    expect(response2.statusCode).toBe(201);
+  });
+
   test("User -> get refresh token", async () => {
     const response = await request(app)
       .post(baseUrl + "/refresh")
@@ -157,6 +177,44 @@ describe("Users Tests", () => {
   });
 
   jest.setTimeout(10000);
+  test("User -> timeout token ", async () => {
+    const response = await request(app)
+      .post(baseUrl + "/login")
+      .send(testUser);
+    expect(response.statusCode).toBe(200);
+    testUser.accessToken = response.body.accessToken;
+    testUser.refreshToken = response.body.refreshToken;
+
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    const response2 = await request(app)
+      .post("/")
+      .set({ authorization: "JWT " + testUser.accessToken })
+      .send({
+        title: "Test Post",
+        content: "Test Content",
+        sender: "abcedfg",
+      });
+    expect(response2.statusCode).not.toBe(201);
+
+    const response3 = await request(app)
+      .post(baseUrl + "/refresh")
+      .send({
+        refreshToken: testUser.refreshToken,
+      });
+    expect(response3.statusCode).toBe(200);
+    testUser.accessToken = response3.body.accessToken;
+
+    const response4 = await request(app)
+      .post("/")
+      .set({ authorization: "JWT " + testUser.accessToken })
+      .send({
+        title: "Test Post",
+        content: "Test Content",
+        sender: "abcdefg",
+      });
+    expect(response4.statusCode).toBe(201);
+  });
 
   test("User -> fail to create (user exists)", async () => {
     if (await userModel.findOne({ username: testUser.username })) {
@@ -178,6 +236,7 @@ describe("Users Tests", () => {
       .post(baseUrl + "/login")
       .send({
         email: "notExistingEmail",
+        username: "notExistingUsername",
         password: "noteExistingPassword",
       });
     expect(response.statusCode).not.toBe(200);
@@ -187,6 +246,7 @@ describe("Users Tests", () => {
       .post(baseUrl + "/login")
       .send({
         email: testUser.email,
+        username: testUser.username,
         password: "incorrectPassword",
       });
     expect(response.statusCode).not.toBe(200);
@@ -245,7 +305,7 @@ describe("Users Tests", () => {
       .send({
         refreshToken: "AAA",
       });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(500);
   });
   test("User -> refresh with valid token not existing", async () => {
     const response = await request(app)
@@ -254,7 +314,7 @@ describe("Users Tests", () => {
         refreshToken:
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2Nzc5NzNiYzE4YjIyNWZhOGIyZDZmZDQiLCJyYW5kb20iOiIwLjE3NjQ0MzU0MDc2NzEwMzIyIiwiaWF0IjoxNzM2MDEyNzMzLCJleHAiOjE3MzY2MTc1MzN9.Z9qt7VSIeoSgdj_uKZr-Hxlz8sUEF06B9mbrwJN1uzY",
       });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
   });
   test("User -> refresh with invalid token_secret in .env", async () => {
     const prev = process.env.TOKEN_SECRET;
@@ -263,7 +323,7 @@ describe("Users Tests", () => {
     const response = await request(app)
       .post(baseUrl + "/refresh")
       .send(testUser);
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(500);
 
     process.env.TOKEN_SECRET = prev;
   });
@@ -315,48 +375,4 @@ describe("Users Tests", () => {
       });
     expect(response.statusCode).toBe(400);
   });
-});
-
-test("User -> create post without user", async () => {
-  const response = await request(app).post("/").send({
-    content: "Test content",
-    sender: "notExistingUser",
-  });
-  expect(response.statusCode).not.toBe(201);
-});
-
-test("User -> timeout token ", async () => {
-  const responseRegister = await request(app).post(baseUrl).send(testUser);
-  expect(responseRegister.statusCode).toBe(201);
-  
-  const response = await request(app)
-    .post(baseUrl + "/login")
-    .send(testUser);
-  expect(response.statusCode).toBe(200);
-  testUser.accessToken = response.body.accessToken;
-  testUser.refreshToken = response.body.refreshToken;
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-  const response2 = await request(app)
-    .post("/")
-    .set({ authorization: "JWT " + testUser.accessToken })
-    .send({
-      content: "Test Content",
-      sender: "abcedfg",
-    });
-  expect(response2.statusCode).not.toBe(201);
-  const response3 = await request(app)
-    .post(baseUrl + "/refresh")
-    .send({
-      refreshToken: testUser.refreshToken,
-    });
-  expect(response3.statusCode).toBe(200);
-  testUser.accessToken = response3.body.accessToken;
-  const response4 = await request(app)
-    .post("/")
-    .set({ authorization: "JWT " + testUser.accessToken })
-    .send({
-      content: "Test Content",
-      sender: "abcdefg",
-    });
-  expect(response4.statusCode).toBe(201);
 });

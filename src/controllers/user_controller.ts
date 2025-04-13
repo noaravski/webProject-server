@@ -25,11 +25,13 @@ const createUser = async (req: Request, res: Response) => {
         username: body.username,
         email: body.email,
         password: hashedPassword,
-        profilePic: req.file.filename,
+        profilePic: req.file?.filename || "/upload/noProfilePic.png"
       });
 
       const userId = user._id.toString();
-      updateUserDir(userId, req.file);
+      if(req.file){
+        updateUserDir(userId, req.file);
+      }
 
       res.status(201).send(user);
     } catch (error) {

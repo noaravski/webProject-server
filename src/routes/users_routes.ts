@@ -271,8 +271,14 @@ router.get("/", (req: Request, res: Response) => {
  *       500:
  *         description: Server error
  */
-router.post("/", uploadMiddleware, async (req: Request, res: Response) => {
-  createUser(req, res);
+router.post("/", async (req: Request, res: Response) => {
+  if (!req.file) {
+    createUser(req, res);
+  } else {
+    uploadMiddleware(req, res, () => {
+      createUser(req, res);
+    });
+  }
 });
 
 /**

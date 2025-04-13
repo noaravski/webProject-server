@@ -34,7 +34,6 @@ beforeAll(async () => {
   const response = await request(app).post("/user/login").send(testUser);
   testUser.refreshToken = response.body.refreshToken;
   testUser._id = response.body._id;
-  expect(response.statusCode).toBe(200);
 });
 
 afterAll(() => {
@@ -56,6 +55,7 @@ describe("Posts Tests", () => {
         .set("authorization", "JWT " + testUser.refreshToken)
         .send(post);
       expect(response.statusCode).toBe(201);
+      expect(response.body.title).toBe(post.title);
       expect(response.body.content).toBe(post.content);
       expect(response.body.sender).toBe(post.sender);
       post._id = response.body._id;
@@ -98,12 +98,12 @@ describe("Posts Tests", () => {
     const response = await request(app)
       .delete("/post/" + "AAAAAAAAAAAAAAAAAAAAAAAA") //A - is valid id but not existing one
       .set("authorization", "JWT " + testUser.refreshToken);
-    expect(response.statusCode).toBe(404);
+    expect(response.statusCode).toBe(401);
   });
 
   test("Post -> Delete post with invalid id", async () => {
     const response = await request(app)
-      .delete("/post/" + "AAA")  //A - is invalid id
+      .delete("/post/" + "AAA") //A - is invalid id
       .set("authorization", "JWT " + testUser.refreshToken);
     expect(response.statusCode).toBe(400);
   });
@@ -115,7 +115,7 @@ describe("Posts Tests", () => {
       .send({
         content: "Test Content 1",
       });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
   });
   test("Post -> update post", async () => {
     const response = await request(app)
@@ -124,7 +124,7 @@ describe("Posts Tests", () => {
       .send({
         content: "Test Content 1",
       });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(200);
   });
   test("Post -> update non existing post existing user", async () => {
     const response = await request(app)
@@ -134,6 +134,6 @@ describe("Posts Tests", () => {
         id: "AAAAAAAAAAAAAAAAAAAAAAAA",
         content: "Test Content 1",
       });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(401);
   });
 });

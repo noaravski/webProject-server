@@ -6,13 +6,13 @@ import userModel from "../models/user_model";
 
 const postController = new BaseController<IPost>(postModel);
 
-const createPost = async (body: IPost) => {
+const createPost = async (req: Request, res: Response) => {
   try {
-    const newPost = new postModel(body);
+    const newPost = new postModel(req.body);
     await newPost.save();
-    return true;
+    res.status(200).json(newPost);
   } catch (err) {
-    return false;
+    res.status(500).json(err);
   }
 };
 

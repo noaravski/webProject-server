@@ -2,10 +2,7 @@ import express from "express";
 import { uploadMiddleware } from "../middleware/uploadService";
 import { authMiddleware } from "../controllers/user_controller";
 import { createPost } from "../controllers/posts_controller";
-import {
-  uploadImage,
-  uploadImageToPost,
-} from "../controllers/file_controller";
+import { uploadImage, uploadImageToPost } from "../controllers/file_controller";
 const router = express.Router();
 
 /**
@@ -53,7 +50,6 @@ router.post(
   }
 );
 
-
 /**
  * @swagger
  * /api/post:
@@ -77,10 +73,18 @@ router.post(
  *       500:
  *         description: error in the server side
  */
-router.post("/api/post", authMiddleware, uploadMiddleware, async (req, res) => {
-  uploadImageToPost(req, res);
+router.post("/api/post", authMiddleware, async (req, res) => {
+  if (!req.file) {
+    createPost(req, res);
+    return;
+  }
+  uploadMiddleware(req, res, (err) => {
+    if (err) {
+      res.status(400).send({ error: "Error uploading file" });
+      return;
+    }
+    uploadImageToPost(req, res);
+  });
 });
-
-
 
 export default router;
