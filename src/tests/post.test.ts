@@ -135,4 +135,104 @@ describe("Posts Tests", () => {
       });
     expect(response.statusCode).toBe(404);
   });
+
+  test("Post -> add like to a post", async () => {
+    const response = await request(app)
+      .put(`/post/like/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.text).toBe("Like added");
+
+    const postResponse = await request(app).get(`/post/${testPosts[1]._id}`);
+    expect(postResponse.statusCode).toBe(200);
+    expect(postResponse.body.likes).toContain(testUser._id);
+  });
+
+  test("Post -> add like to a post already liked", async () => {
+    await request(app)
+      .put(`/post/like/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    const response = await request(app)
+      .put(`/post/like/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.text).toContain("already liked");
+  });
+
+  test("Post -> remove like from a post", async () => {
+    await request(app)
+      .put(`/post/like/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    const response = await request(app)
+      .put(`/post/unlike/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.text).toBe("Like Removed");
+
+    const postResponse = await request(app).get(`/post/${testPosts[1]._id}`);
+    expect(postResponse.statusCode).toBe(200);
+    expect(postResponse.body.likes).not.toContain(testUser._id);
+  });
+
+  test("Post -> remove like from a post not liked", async () => {
+    const response = await request(app)
+      .put(`/post/unlike/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.text).toContain("not liked by user");
+  });
+
+  test("Post -> check if user liked a post (liked)", async () => {
+    await request(app)
+      .put(`/post/like/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    const response = await request(app)
+      .get(`/post/isliked/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.isLiked).toBe(true);
+  });
+
+  test("Post -> check if user liked a post (not liked)", async () => {
+    const response = await request(app)
+      .get(`/post/isliked/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(200);
+  });
+
+  test("Post -> add like to non-existent post", async () => {
+    const response = await request(app)
+      .put(`/post/like/AAAAAAAAAAAAAAAAAAAAAAAA`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(404);
+    expect(response.text).toContain("not found");
+  });
+
+  test("Post -> remove like from non-existent post", async () => {
+    const response = await request(app)
+      .put(`/post/unlike/AAAAAAAAAAAAAAAAAAAAAAAA`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(404);
+    expect(response.text).toContain("not found");
+  });
+
+  test("Post -> check if user liked a non-existent post", async () => {
+    const response = await request(app)
+      .get(`/post/isliked/AAAAAAAAAAAAAAAAAAAAAAAA`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(404);
+    expect(response.text).toContain("not found");
+  });
 });

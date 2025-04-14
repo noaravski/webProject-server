@@ -60,6 +60,10 @@ const addLike = async (req: Request, res: Response) => {
   try {
     const post = await postModel.findById(postId);
     if (post) {
+      if(post.likes.includes(req.params.userId)) {
+        res.status(400).send("Post already liked by user");
+        return;
+      }
       post.likes.push(req.params.userId);
       await post.save();
       res.status(200).send("Like added");
@@ -76,6 +80,10 @@ const removeLike = async (req: Request, res: Response) => {
   try {
     const post = await postModel.findById(id);
     if (post) {
+      if(!post.likes.includes(req.params.userId)) {
+        res.status(400).send("Post not liked by user");
+        return;
+      }
       post.likes = post.likes.filter((like) => like != req.params.userId);
       await post.save();
       res.status(200).send("Like Removed");

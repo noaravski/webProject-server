@@ -5,6 +5,22 @@ import postModel from "../models/posts_model";
 import { Express } from "express";
 import userModel, { IUser } from "../models/user_model";
 
+jest.mock("google-auth-library", () => {
+  const originalModule = jest.requireActual("google-auth-library");
+  return {
+    ...originalModule,
+    OAuth2Client: jest.fn().mockImplementation(() => ({
+      verifyIdToken: jest.fn().mockResolvedValue({
+        getPayload: jest.fn().mockReturnValue({
+          email: "movierator123@gmail.com",
+          name: "test",
+          sub: "110274800812615766437",
+        }),
+      }),
+    })),
+  };
+});
+
 let app: Express;
 
 beforeAll(async () => {
@@ -368,6 +384,17 @@ describe("Users Tests", () => {
         username: testUser.username,
       });
     expect(response.statusCode).toBe(200);
+
+   //register and login after deletion  
+    const response1 = await request(app).post(baseUrl).send(testUser);
+    testUser._id = response1.body._id;
+    expect(response1.statusCode).toBe(201);
+    const response2 = await request(app)
+      .post(baseUrl + "/login")
+      .send(testUser);
+    expect(response2.statusCode).toBe(200);
+    testUser.accessToken = response2.body.accessToken;
+    testUser.refreshToken = response2.body.refreshToken;
   });
   test("User -> delete non existing user", async () => {
     const response = await request(app)
@@ -376,5 +403,62 @@ describe("Users Tests", () => {
         username: testUser.username,
       });
     expect(response.statusCode).toBe(400);
+  });
+
+  test("User -> Google login fail (missing credential)", async () => {
+    const response = await request(app)
+      .post(baseUrl + "/login/google")
+      .send({});
+
+    expect(response.statusCode).toBe(400);
+    expect(response.text).toContain("missing");
+  });
+
+  test("User -> Get user details success", async () => {
+    try {
+      const response = await request(app)
+        .get(baseUrl + "/details/" + testUser._id)
+        .set({ authorization: "JWT " + testUser.refreshToken });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveProperty("_id", testUser._id);
+    } catch (error) {
+      console.error("Error in test: ", error);
+    }
+  });
+
+  test("User -> Google login success", async () => {
+    const mockGoogleCredential = "mock-google-credential";
+
+    const response = await request(app)
+      .post("/user/login/google")
+      .send({ credential: mockGoogleCredential });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.accessToken).toMatch(/^eyJ/);
+  });
+
+  // test("User -> Get user details fail (non-existent user)", async () => {
+  //   const response = await request(app)
+  //     .get(baseUrl + "/details/AAAAAAAAAAAAAAAAAAAAAAAA")
+  //     .set({ authorization: "JWT " + testUser.refreshToken });
+
+  //   expect(response.statusCode).toBe(404);
+  // });
+
+  test("User -> Get user posts success", async () => {
+    const response = await request(app)
+      .get(baseUrl + "/posts/" + testUser.username)
+      .set({ authorization: "JWT " + testUser.refreshToken });
+
+    expect(response.statusCode).toBe(200);
+  });
+
+  test("User -> Get user posts fail (non-existent user)", async () => {
+    const response = await request(app)
+      .get(baseUrl + "/posts/AAAAAAAAAAAAAAAAAAAAAAAA")
+      .set({ authorization: "JWT " + testUser.refreshToken });
+
+    expect(response.statusCode).toBe(404);
   });
 });
