@@ -438,14 +438,6 @@ describe("Users Tests", () => {
     expect(response.body.accessToken).toMatch(/^eyJ/);
   });
 
-  // test("User -> Get user details fail (non-existent user)", async () => {
-  //   const response = await request(app)
-  //     .get(baseUrl + "/details/AAAAAAAAAAAAAAAAAAAAAAAA")
-  //     .set({ authorization: "JWT " + testUser.refreshToken });
-
-  //   expect(response.statusCode).toBe(404);
-  // });
-
   test("User -> Get user posts success", async () => {
     const response = await request(app)
       .get(baseUrl + "/posts/" + testUser.username)
