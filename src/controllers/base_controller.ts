@@ -79,14 +79,22 @@ class BaseController<T> {
   async updateItem(req: Request, res: Response) {
     const id = req.params.id;
     const body = req.body;
-    const userExists = await userModel.find({ username: req.params.username });
-    if (body && userExists.length == 1) {
-      const item = await this.model.findByIdAndUpdate(id, body, {
-        new: true,
-      });
-      res.status(200).send(item);
-    } else {
-      res.status(400).send("Item is required or User does not exist");
+    
+    try{
+      const userExists = await userModel.find({ username: req.params.username });
+      if (body && userExists.length == 1) {
+        const item = await this.model.findByIdAndUpdate(id, body, {
+          new: true,
+        });
+        if (!item) {
+          return res.status(404).send("Item not found");
+        }
+        res.status(200).send(item);
+      } else {
+        res.status(400).send("Item is required or User does not exist");
+      }
+    }catch (error) {
+        res.status(404).send("Item does not exist: " + error);
     }
   }
 }

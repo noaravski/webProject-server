@@ -45,6 +45,9 @@ const router = express.Router();
  */
 
 
+router.post("/", authMiddleware,(req: Request, res: Response) => {
+  createPost(req,res);
+});
 
 /**
  * @swagger

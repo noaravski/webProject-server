@@ -3,15 +3,20 @@ import mongoose from "mongoose";
 export interface IPost {
   content: string;
   sender: string;
-  senderId: mongoose.Schema.Types.ObjectId;
+  senderId?: mongoose.Schema.Types.ObjectId;
   likes?: string[];
   createdAt?: Date;
   imageUrl?: string;
   profilePic?: string;
+  title?: string;
 }
 
 const postSchema = new mongoose.Schema<IPost>({
   content: String,
+  title: {
+    type: String,
+    required: false,
+  },
   sender: {
     type: String,
     ref: "Users",
@@ -26,7 +31,7 @@ const postSchema = new mongoose.Schema<IPost>({
   createdAt: { type: Date, default: Date.now },
   imageUrl: {
     type: String,
-    required: true,
+    required: false,
   },
   profilePic: {
     type: String,

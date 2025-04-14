@@ -4,10 +4,12 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "jest --detectOpenHandles --forceExit --runInBand --coverage",
+    "test": "jest --forceExit --runInBand --coverage",
     "testUser": "tsc && jest --detectOpenHandles --forceExit user.test.ts",
     "testPost": "tsc && jest --detectOpenHandles --forceExit post.test.ts",
     "testComment": "tsc && jest --detectOpenHandles --forceExit comment.test.ts",
+    "testFile": "tsc && jest --detectOpenHandles --forceExit file.test.ts",
+    "testAi": "tsc && jest --detectOpenHandles --forceExit ai.test.ts",
     "dev": "nodemon ./src/app.ts",
     "lint": "eslint . --ext .ts",
     "start": "tsc && node dist/app.js"
