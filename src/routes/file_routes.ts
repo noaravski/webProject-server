@@ -42,10 +42,6 @@ const router = express.Router();
  *         description: The image was not able to be uploaded
  */
 router.post("/api/upload/:userId", authMiddleware, (req, res) => {
-  if (!req.file) {
-    res.status(400).send({ error: "No file provided" });
-    return;
-  }
   uploadMiddleware(req, res, (err) => {
     if (err) {
       res.status(400).send({ error: "Error uploading file" });
@@ -79,10 +75,6 @@ router.post("/api/upload/:userId", authMiddleware, (req, res) => {
  *         description: error in the server side
  */
 router.post("/api/post/:userId", authMiddleware, async (req, res) => {
-  if (!req.file) {
-    createPost(req, res);
-    return;
-  }
   uploadMiddleware(req, res, (err) => {
     if (err) {
       res.status(400).send({ error: "Error uploading file" });

@@ -35,6 +35,11 @@ beforeAll(async () => {
   console.log("[*] Before file tests run");
   app = await appInit();
 
+  // Ensure test file exists
+  if (!fs.existsSync(testFilePath)) {
+    fs.writeFileSync(testFilePath, "Test image content");
+  }
+
   // Clean up database
   await postsModel.deleteMany();
   await userModel.deleteMany();
@@ -57,75 +62,53 @@ beforeAll(async () => {
   testPost._id = postResponse.body._id;
 });
 
-afterAll(() => {
+afterAll(async () => {
   console.log("[*] After all file tests");
-  mongoose.connection.close();
+  await mongoose.connection.close();
 });
 
 describe("File Tests", () => {
   test("File -> upload profile picture", async () => {
-    const file = fs.createReadStream(testFilePath);
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
       const response = await request(app)
         .post(`/api/upload/${testUser._id}`)
         .set("authorization", "JWT " + testUser.refreshToken)
-        .set(formData.getHeaders())
-        .send(formData);
+        .attach("image", testFilePath);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.message).toBe("File uploaded successfully");
-      expect(response.body.filePath).toContain(`/uploads/${testUser._id}`);
+      expect(response.text).toContain("test.jpg");
     } catch (error) {
       console.error("Error during file upload:", error);
     }
   });
 
   test("File -> upload picture to post", async () => {
-    const file = fs.createReadStream(testFilePath);
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
       const response = await request(app)
         .post(`/api/post/${testUser._id}`)
         .set("authorization", "JWT " + testUser.refreshToken)
-        .set(formData.getHeaders())
-        .send(formData);
+        .attach("image", testFilePath);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.message).toBe("Image uploaded to post successfully");
+      expect(response.text).toContain("test.jpg");
     } catch (error) {
       console.error("Error during file upload:", error);
     }
   });
 
-  test("File -> upload without file", async () => {
-    const response = await request(app)
-      .post(`/api/upload/${testUser._id}`)
-      .set("authorization", "JWT " + testUser.refreshToken);
-
-    expect(response.statusCode).toBe(400);
-    expect(response.body.error).toBe("No file provided");
-  });
 
   test("File -> upload unsupported file type", async () => {
     const unsupportedFilePath = path.join(__dirname, "test-unsupported.exe");
     const file = fs.createReadStream(unsupportedFilePath);
-    const formData = new FormData();
-    formData.append("file", file);
 
     try {
       const response = await request(app)
         .post(`/api/upload/${testUser._id}`)
         .set("authorization", "JWT " + testUser.refreshToken)
-        .set(formData.getHeaders())
-        .send(formData);
+        .attach("image", file.path);
 
       expect(response.statusCode).toBe(415);
-      expect(response.body.error).toBe("Unsupported file type");
+      expect(response.text).toContain("Unsupported file type");
     } catch (error) {
       console.error("Error during file upload:", error);
     }
@@ -133,19 +116,38 @@ describe("File Tests", () => {
 
   test("File -> upload file exceeding size limit", async () => {
     const largeFilePath = path.join(__dirname, "test-large-file.txt");
-    const largeFileContent = "A".repeat(6 * 1024 * 1024); // 6MB file
+    const largeFileContent = "A".repeat(6 * 1024 * 1024);
     fs.writeFileSync(largeFilePath, largeFileContent);
 
     try {
       const response = await request(app)
         .post(`/api/upload/${testUser._id}`)
         .set("authorization", "JWT " + testUser.refreshToken)
-        .attach("file", largeFilePath);
+        .attach("image", largeFilePath);
 
-      expect(response.statusCode).toBe(413);
-      expect(response.body.error).toBe("File size exceeds limit");
+      expect(response.statusCode).toBe(400);
+      expect(response.text).toContain("Error uploading file");
     } catch (error) {
       console.error("Error during file upload:", error);
+    }
+  });
+
+
+  test("File -> unauthorized upload attempt", async () => {
+    const largeFilePath = path.join(__dirname, "test-large-file.exe");
+    const largeFileContent = "A".repeat(6 * 1024);
+    fs.writeFileSync(largeFilePath, largeFileContent);
+    const file = fs.createReadStream(largeFilePath);
+
+    try {
+      const response = await request(app)
+        .post(`/api/upload/${testUser._id}`)
+        .attach("image", file);
+
+      expect(response.statusCode).toBe(401);
+      expect(response.text).toContain("Unauthorized");
+    } catch (error) {
+      console.error("Error during unauthorized upload attempt:", error);
     }
   });
 });

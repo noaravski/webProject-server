@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "jest --detectOpenHandles --forceExit --runInBand --coverage",
+    "test": "jest --forceExit --runInBand --coverage",
     "testUser": "tsc && jest --detectOpenHandles --forceExit user.test.ts",
     "testPost": "tsc && jest --detectOpenHandles --forceExit post.test.ts",
     "testComment": "tsc && jest --detectOpenHandles --forceExit comment.test.ts",

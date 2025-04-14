@@ -18,7 +18,6 @@ const uploadImageToPost = async (req: Request, res: Response) => {
         imageUrl: req.file.filename,
       };
       await createPost(req, res);
-      res.status(200).send("File uploaded successfully - " + req.file.filename);
     } else {
       res.status(400).send("No file uploaded.");
     }
