@@ -2,10 +2,7 @@ import express from "express";
 import { uploadMiddleware } from "../middleware/uploadService";
 import { authMiddleware } from "../controllers/user_controller";
 import { createPost } from "../controllers/posts_controller";
-import {
-  uploadImage,
-  uploadImageToPost,
-} from "../controllers/file_controller";
+import { uploadImage, uploadImageToPost } from "../controllers/file_controller";
 const router = express.Router();
 
 /**
@@ -44,15 +41,15 @@ const router = express.Router();
  *       400:
  *         description: The image was not able to be uploaded
  */
-router.post(
-  "/api/upload/:userId",
-  authMiddleware,
-  uploadMiddleware,
-  (req, res) => {
+router.post("/api/upload/:userId", authMiddleware, (req, res) => {
+  uploadMiddleware(req, res, (err) => {
+    if (err) {
+      res.status(400).send({ error: "Error uploading file" });
+      return;
+    }
     uploadImage(req, res);
-  }
-);
-
+  });
+});
 
 /**
  * @swagger
@@ -77,10 +74,14 @@ router.post(
  *       500:
  *         description: error in the server side
  */
-router.post("/api/post", authMiddleware, uploadMiddleware, async (req, res) => {
-  uploadImageToPost(req, res);
+router.post("/api/post/:userId", authMiddleware, async (req, res) => {
+  uploadMiddleware(req, res, (err) => {
+    if (err) {
+      res.status(400).send({ error: "Error uploading file" });
+      return;
+    }
+    uploadImageToPost(req, res);
+  });
 });
-
-
 
 export default router;

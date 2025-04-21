@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 
 export interface IComments {
   content: string;
-  postId: string;
+  postId?: string;
   sender: string;
   createdAt?: Date;
-  senderId: mongoose.Schema.Types.ObjectId;
+  senderId?: mongoose.Schema.Types.ObjectId;
 }
 
 const commentsSchema = new mongoose.Schema<IComments>({

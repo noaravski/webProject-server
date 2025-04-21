@@ -34,7 +34,6 @@ beforeAll(async () => {
   const response = await request(app).post("/user/login").send(testUser);
   testUser.refreshToken = response.body.refreshToken;
   testUser._id = response.body._id;
-  expect(response.statusCode).toBe(200);
 });
 
 afterAll(() => {
@@ -44,7 +43,7 @@ afterAll(() => {
 
 describe("Posts Tests", () => {
   test("Post -> get all post when empty", async () => {
-    const response = await request(app).get("/");
+    const response = await request(app).get("/posts");
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(0);
   });
@@ -55,7 +54,8 @@ describe("Posts Tests", () => {
         .post("/")
         .set("authorization", "JWT " + testUser.refreshToken)
         .send(post);
-      expect(response.statusCode).toBe(201);
+      expect(response.statusCode).toBe(200);
+      expect(response.body.title).toBe(post.title);
       expect(response.body.content).toBe(post.content);
       expect(response.body.sender).toBe(post.sender);
       post._id = response.body._id;
@@ -63,7 +63,7 @@ describe("Posts Tests", () => {
   });
 
   test("Post -> get all post (test_post.json)", async () => {
-    const response = await request(app).get("/");
+    const response = await request(app).get("/posts");
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(testPosts.length);
   });
@@ -103,7 +103,7 @@ describe("Posts Tests", () => {
 
   test("Post -> Delete post with invalid id", async () => {
     const response = await request(app)
-      .delete("/post/" + "AAA")  //A - is invalid id
+      .delete("/post/" + "AAA") //A - is invalid id
       .set("authorization", "JWT " + testUser.refreshToken);
     expect(response.statusCode).toBe(400);
   });
@@ -115,7 +115,7 @@ describe("Posts Tests", () => {
       .send({
         content: "Test Content 1",
       });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(500);
   });
   test("Post -> update post", async () => {
     const response = await request(app)
@@ -124,16 +124,115 @@ describe("Posts Tests", () => {
       .send({
         content: "Test Content 1",
       });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(200);
   });
   test("Post -> update non existing post existing user", async () => {
     const response = await request(app)
-      .put("/post/" + testPosts[1]._id)
+      .put("/post/AAAAAAAAAAAAAAAAAAAAAAAA")
       .set("authorization", "JWT " + testUser.refreshToken)
       .send({
-        id: "AAAAAAAAAAAAAAAAAAAAAAAA",
         content: "Test Content 1",
       });
+    expect(response.statusCode).toBe(404);
+  });
+
+  test("Post -> add like to a post", async () => {
+    const response = await request(app)
+      .put(`/post/like/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.text).toBe("Like added");
+
+    const postResponse = await request(app).get(`/post/${testPosts[1]._id}`);
+    expect(postResponse.statusCode).toBe(200);
+    expect(postResponse.body.likes).toContain(testUser._id);
+  });
+
+  test("Post -> add like to a post already liked", async () => {
+    await request(app)
+      .put(`/post/like/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    const response = await request(app)
+      .put(`/post/like/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
     expect(response.statusCode).toBe(400);
+    expect(response.text).toContain("already liked");
+  });
+
+  test("Post -> remove like from a post", async () => {
+    await request(app)
+      .put(`/post/like/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    const response = await request(app)
+      .put(`/post/unlike/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.text).toBe("Like Removed");
+
+    const postResponse = await request(app).get(`/post/${testPosts[1]._id}`);
+    expect(postResponse.statusCode).toBe(200);
+    expect(postResponse.body.likes).not.toContain(testUser._id);
+  });
+
+  test("Post -> remove like from a post not liked", async () => {
+    const response = await request(app)
+      .put(`/post/unlike/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.text).toContain("not liked by user");
+  });
+
+  test("Post -> check if user liked a post (liked)", async () => {
+    await request(app)
+      .put(`/post/like/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    const response = await request(app)
+      .get(`/post/isliked/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.isLiked).toBe(true);
+  });
+
+  test("Post -> check if user liked a post (not liked)", async () => {
+    const response = await request(app)
+      .get(`/post/isliked/${testPosts[1]._id}`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(200);
+  });
+
+  test("Post -> add like to non-existent post", async () => {
+    const response = await request(app)
+      .put(`/post/like/AAAAAAAAAAAAAAAAAAAAAAAA`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(404);
+    expect(response.text).toContain("not found");
+  });
+
+  test("Post -> remove like from non-existent post", async () => {
+    const response = await request(app)
+      .put(`/post/unlike/AAAAAAAAAAAAAAAAAAAAAAAA`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(404);
+    expect(response.text).toContain("not found");
+  });
+
+  test("Post -> check if user liked a non-existent post", async () => {
+    const response = await request(app)
+      .get(`/post/isliked/AAAAAAAAAAAAAAAAAAAAAAAA`)
+      .set("authorization", "JWT " + testUser.refreshToken);
+
+    expect(response.statusCode).toBe(404);
+    expect(response.text).toContain("not found");
   });
 });

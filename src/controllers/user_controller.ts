@@ -25,11 +25,13 @@ const createUser = async (req: Request, res: Response) => {
         username: body.username,
         email: body.email,
         password: hashedPassword,
-        profilePic: req.file.filename,
+        profilePic: req.file?.filename || "/upload/noProfilePic.png",
       });
 
       const userId = user._id.toString();
-      updateUserDir(userId, req.file);
+      if (req.file) {
+        updateUserDir(userId, req.file);
+      }
 
       res.status(201).send(user);
     } catch (error) {
@@ -233,9 +235,6 @@ const updateUser = async (req: Request, res: Response) => {
   if (body && userExists.length == 1 && usernameTaken.length == 0) {
     try {
       let item;
-      console.log(body);
-      console.log(req.params);
-      console.log(oldUsername);
       if (req.file !== undefined) {
         item = await userModel.findByIdAndUpdate(
           id,
@@ -272,8 +271,9 @@ const updateUser = async (req: Request, res: Response) => {
 
       if (item) {
         const userId = item._id.toString();
-        updateUserDir(userId, req.file);
-
+        if (req.file) {
+          updateUserDir(userId, req.file);
+        }
         item.refreshToken = [];
         const tokens = generateToken(item._id.toString(), item.username);
         if (tokens) {
@@ -315,6 +315,10 @@ const client = new OAuth2Client();
 
 const googleLogin = async (req: Request, res: Response) => {
   const credential = req.body.credential;
+  if (!credential) {
+    res.status(400).send("missing credential");
+    return;
+  }
   try {
     const ticket = await client.verifyIdToken({
       idToken: credential,
@@ -335,7 +339,7 @@ const googleLogin = async (req: Request, res: Response) => {
     res.status(200).send(tokens);
     return;
   } catch (err) {
-    res.status(400).send("error missing email or password");
+    res.status(400).send("error missing email or password:" + err.message);
     return;
   }
 };
@@ -346,6 +350,8 @@ const getUserDetails = async (req: Request, res: Response) => {
 
     if (user) {
       res.status(200).send(user);
+    } else {
+      res.status(404).send("User not found");
     }
   } catch (err) {
     res.status(400).send(err.message);
@@ -366,23 +372,13 @@ const getProfilePicUrl = async (req: Request, res: Response) => {
   }
 };
 
-const idBySender = async (req: Request, res: Response) => {
-  try {
-    const user = await userModel.find({ username: req.params.sender });
-
-    if (user) {
-      res.status(200).send(user[0]._id);
-    } else {
-      res.status(404).send("User details was not found");
-    }
-  } catch (err) {
-    res.status(400).send(err.message);
-  }
-};
-
 const getUserPosts = async (req: Request, res: Response) => {
   try {
-    const user = await userModel.findById(req.params.userId);
+    const user = await userModel.findOne({ username: req.params.sender });
+    if (!user) {
+      res.status(404).send("User not found");
+      return;
+    }
     const posts = await postModel.find({ sender: user?.username });
     if (posts) {
       res.status(200).send(posts);
@@ -405,6 +401,5 @@ export {
   refresh,
   googleLogin,
   getUserDetails,
-  idBySender,
   getProfilePicUrl,
 };
