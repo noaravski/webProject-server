@@ -15,11 +15,7 @@ const testUser: IUser = {
   password: "Noaravski123",
 };
 
-type Post = IPost & {
-  _id?: string;
-};
-
-const testPosts: Post[] = testPostsData;
+const testPosts = testPostsData;
 
 beforeAll(async () => {
   console.log("[*] Before post tests run");
@@ -115,7 +111,11 @@ describe("Posts Tests", () => {
       .send({
         content: "Test Content 1",
       });
+<<<<<<< HEAD
+    expect(response.statusCode).toBe(404);
+=======
     expect(response.statusCode).toBe(500);
+>>>>>>> 41ad72628d4c2b74bf19a94c14e36db2a7ce7da6
   });
   test("Post -> update post", async () => {
     const response = await request(app)
@@ -124,7 +124,11 @@ describe("Posts Tests", () => {
       .send({
         content: "Test Content 1",
       });
+<<<<<<< HEAD
+    expect(response.statusCode).toBe(404);
+=======
     expect(response.statusCode).toBe(200);
+>>>>>>> 41ad72628d4c2b74bf19a94c14e36db2a7ce7da6
   });
   test("Post -> update non existing post existing user", async () => {
     const response = await request(app)
@@ -134,6 +138,8 @@ describe("Posts Tests", () => {
         content: "Test Content 1",
       });
     expect(response.statusCode).toBe(404);
+<<<<<<< HEAD
+=======
   });
 
   test("Post -> add like to a post", async () => {
@@ -234,5 +240,6 @@ describe("Posts Tests", () => {
 
     expect(response.statusCode).toBe(404);
     expect(response.text).toContain("not found");
+>>>>>>> 41ad72628d4c2b74bf19a94c14e36db2a7ce7da6
   });
 });

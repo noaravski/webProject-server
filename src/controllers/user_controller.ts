@@ -2,14 +2,12 @@ import userModel, { IUser } from "../models/user_model";
 import BaseController from "./base_controller";
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
-import dotenv from "dotenv";
 import commentModel from "../models/comments_model";
 import postModel from "../models/posts_model";
 import { updateUserDir } from "../middleware/fileService";
-import mongoose from "mongoose";
-import path from "path";
+import jwt from "jsonwebtoken";
+
 const usersController = new BaseController<IUser>(userModel);
 
 const createUser = async (req: Request, res: Response) => {
@@ -25,12 +23,14 @@ const createUser = async (req: Request, res: Response) => {
         username: body.username,
         email: body.email,
         password: hashedPassword,
-        profilePic: req.file?.filename || "/upload/noProfilePic.png",
+        profilePic: req.file?.filename ?? "noProfilePic.png",
       });
 
       const userId = user._id.toString();
       if (req.file) {
-        updateUserDir(userId, req.file);
+        if (req.file) {
+          updateUserDir(userId, req.file);
+        }
       }
 
       res.status(201).send(user);
@@ -63,7 +63,9 @@ const generateToken = (userId: string, username: string): tTokens | null => {
       random: random,
     },
     process.env.TOKEN_SECRET,
-    { expiresIn: process.env.TOKEN_EXPIRES }
+    {
+      expiresIn: "1h",
+    }
   );
 
   const refreshToken = jwt.sign(
@@ -73,7 +75,9 @@ const generateToken = (userId: string, username: string): tTokens | null => {
       random: random,
     },
     process.env.TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES }
+    {
+      expiresIn: "7d",
+    }
   );
   return {
     accessToken: accessToken,
@@ -104,7 +108,7 @@ const login = async (req: Request, res: Response) => {
     res.status(500).send("Server Error");
     return;
   }
-  user.refreshToken.push(tokens.refreshToken);
+  user.refreshToken?.push(tokens.refreshToken);
   await user.save();
   res.status(200).send({
     email: user.email,
@@ -133,7 +137,10 @@ const logout = async (req: Request, res: Response) => {
   jwt.verify(
     refreshToken,
     process.env.TOKEN_SECRET,
-    async (err: any, data: any) => {
+    async (
+      err: jwt.VerifyErrors | null,
+      data: jwt.JwtPayload | string | undefined
+    ) => {
       if (err) {
         res.status(500).send("internal error");
         return;
@@ -144,7 +151,7 @@ const logout = async (req: Request, res: Response) => {
         res.status(403).send("invalid token");
         return;
       }
-      const tokens = user.refreshToken.filter((t) => t !== refreshToken);
+      const tokens = user.refreshToken?.filter((t) => t !== refreshToken);
       user.refreshToken = tokens;
       await user.save();
       res.status(200).send("logged out");
@@ -161,8 +168,11 @@ const refresh = async (req: Request, res: Response) => {
   }
   jwt.verify(
     refreshToken,
-    process.env.TOKEN_SECRET,
-    async (err: any, data: any) => {
+    process.env.TOKEN_SECRET as string,
+    async (
+      err: jwt.VerifyErrors | null,
+      data: jwt.JwtPayload | string | undefined
+    ) => {
       if (err) {
         res.status(400).send("Invalid Refresh Token");
         return;
@@ -187,13 +197,15 @@ const refresh = async (req: Request, res: Response) => {
       user.refreshToken = user.refreshToken.filter((t) => t !== refreshToken);
 
       //save the new refresh token in the user
-      user.refreshToken.push(newTokens.refreshToken);
+      if (newTokens?.refreshToken) {
+        user.refreshToken.push(newTokens.refreshToken);
+      }
       await user.save();
 
       //return the new access token and the new refresh token
       res.status(200).send({
-        accessToken: newTokens.accessToken,
-        refreshToken: newTokens.refreshToken,
+        accessToken: newTokens?.accessToken,
+        refreshToken: newTokens?.refreshToken,
       });
     }
   );
@@ -212,15 +224,20 @@ export const authMiddleware = (
     return;
   }
 
-  jwt.verify(token, process.env.TOKEN_SECRET, (err, payload) => {
-    if (err) {
-      res.status(401).send("Access Denied");
-      return;
+  jwt.verify(
+    token,
+    process.env.TOKEN_SECRET ||
+      "c60fbfb2fccebe261f13eb76c752a5966596b2ff38bb6157f998e543fd5b42c99577a1c3449c58d6125fa5822b881968de9609ee983e5708d1dd267570fc5146",
+    (err, payload) => {
+      if (err) {
+        res.status(401).send("Access Denied:" + err.message);
+        return;
+      }
+      req.params.userId = (payload as TokenPayload)._id;
+      req.params.username = (payload as TokenPayload).username;
+      next();
     }
-    req.params.userId = (payload as TokenPayload)._id;
-    req.params.username = (payload as TokenPayload).username;
-    next();
-  });
+  );
 };
 
 const updateUser = async (req: Request, res: Response) => {
@@ -274,6 +291,7 @@ const updateUser = async (req: Request, res: Response) => {
         if (req.file) {
           updateUserDir(userId, req.file);
         }
+
         item.refreshToken = [];
         const tokens = generateToken(item._id.toString(), item.username);
         if (tokens) {
@@ -284,8 +302,10 @@ const updateUser = async (req: Request, res: Response) => {
       } else {
         res.status(404).send("Item not found");
       }
-    } catch (error) {
-      res.status(400).send(error.message);
+    } catch (err) {
+      res
+        .status(400)
+        .send(err instanceof Error ? err.message : "An unknown error occurred");
     }
   } else {
     res
@@ -298,8 +318,8 @@ const deleteUser = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
     const user = await userModel.findById(id);
-    await commentModel.deleteMany({ sender: user.username });
-    await postModel.deleteMany({ sender: user.username });
+    await commentModel.deleteMany({ sender: user?.username });
+    await postModel.deleteMany({ sender: user?.username });
     if (user) {
       await user.deleteOne();
       res.status(200).send("User deleted");
@@ -307,7 +327,9 @@ const deleteUser = async (req: Request, res: Response) => {
       res.status(404).send("User not found");
     }
   } catch (err) {
-    res.status(400).send(err.message);
+    res
+      .status(400)
+      .send(err instanceof Error ? err.message : "An unknown error occurred");
   }
 };
 
@@ -339,7 +361,12 @@ const googleLogin = async (req: Request, res: Response) => {
     res.status(200).send(tokens);
     return;
   } catch (err) {
-    res.status(400).send("error missing email or password:" + err.message);
+    res
+      .status(400)
+      .send(
+        err instanceof Error ? err.message : "error missing email or password"
+      );
+
     return;
   }
 };
@@ -354,7 +381,9 @@ const getUserDetails = async (req: Request, res: Response) => {
       res.status(404).send("User not found");
     }
   } catch (err) {
-    res.status(400).send(err.message);
+    res
+      .status(400)
+      .send(err instanceof Error ? err.message : "An unknown error occurred");
   }
 };
 
@@ -368,7 +397,25 @@ const getProfilePicUrl = async (req: Request, res: Response) => {
       res.status(200).send({ id: user._id, profilePic: user.profilePic });
     }
   } catch (err) {
-    res.status(400).send(err.message);
+    res
+      .status(400)
+      .send(err instanceof Error ? err.message : "An unknown error occurred");
+  }
+};
+
+const idBySender = async (req: Request, res: Response) => {
+  try {
+    const user = await userModel.find({ username: req.params.sender });
+
+    if (user) {
+      res.status(200).send(user[0]._id);
+    } else {
+      res.status(404).send("User details was not found");
+    }
+  } catch (err) {
+    res
+      .status(400)
+      .send(err instanceof Error ? err.message : "An unknown error occurred");
   }
 };
 
@@ -386,7 +433,9 @@ const getUserPosts = async (req: Request, res: Response) => {
       res.status(404).send("Posts not found");
     }
   } catch (err) {
-    res.status(400).send(err.message);
+    res
+      .status(400)
+      .send(err instanceof Error ? err.message : "An unknown error occurred");
   }
 };
 

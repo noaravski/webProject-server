@@ -33,7 +33,9 @@ const getAllPosts = async (req: Request, res: Response) => {
 
     res.status(200).json(postsWithImageUrl);
   } catch (err) {
-    res.status(400).send(err.message);
+    res
+      .status(400)
+      .send(err instanceof Error ? err.message : "An unknown error occurred");
   }
 };
 
@@ -50,7 +52,9 @@ const deletePost = async (req: Request, res: Response) => {
       res.status(404).send("Post was not found");
     }
   } catch (err) {
-    res.status(400).send(err.message);
+    res
+      .status(400)
+      .send(err instanceof Error ? err.message : "An unknown error occurred");
   }
 };
 
@@ -60,10 +64,11 @@ const addLike = async (req: Request, res: Response) => {
   try {
     const post = await postModel.findById(postId);
     if (post) {
-      if(post.likes.includes(req.params.userId)) {
+      if((post.likes ?? []).includes(req.params.userId)) {
         res.status(400).send("Post already liked by user");
         return;
       }
+      post.likes = post.likes ?? [];
       post.likes.push(req.params.userId);
       await post.save();
       res.status(200).send("Like added");
@@ -71,7 +76,9 @@ const addLike = async (req: Request, res: Response) => {
       res.status(404).send("Post was not found");
     }
   } catch (err) {
-    res.status(400).send(err.message);
+    res
+      .status(400)
+      .send(err instanceof Error ? err.message : "An unknown error occurred");
   }
 };
 
@@ -80,18 +87,20 @@ const removeLike = async (req: Request, res: Response) => {
   try {
     const post = await postModel.findById(id);
     if (post) {
-      if(!post.likes.includes(req.params.userId)) {
+      if(!(post.likes ?? []).includes(req.params.userId)) {
         res.status(400).send("Post not liked by user");
         return;
       }
-      post.likes = post.likes.filter((like) => like != req.params.userId);
+      post.likes = (post.likes ?? []).filter((like) => like != req.params.userId);
       await post.save();
       res.status(200).send("Like Removed");
     } else {
       res.status(404).send("Post was not found");
     }
   } catch (err) {
-    res.status(400).send(err.message);
+    res
+      .status(400)
+      .send(err instanceof Error ? err.message : "An unknown error occurred");
   }
 };
 
@@ -100,14 +109,16 @@ const isLiked = async (req: Request, res: Response) => {
   try {
     const post = await postModel.findById(id);
     if (post) {
-      const isLikedByUser = post.likes.includes(req.params.userId);
+      const isLikedByUser = post.likes?.includes(req.params.userId);
       res.status(200).json({ isLiked: isLikedByUser });
       return;
     } else {
       res.status(404).send("Post was not found");
     }
   } catch (err) {
-    res.status(400).send(err.message);
+    res
+      .status(400)
+      .send(err instanceof Error ? err.message : "An unknown error occurred");
   }
 };
 

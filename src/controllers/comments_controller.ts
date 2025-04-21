@@ -17,7 +17,11 @@ const getCommentsByPostId = async (req: Request, res: Response) => {
       }
     }
   } catch (error) {
-    res.status(400).send(error.message);
+    if (error instanceof Error) {
+      res.status(400).send(error.message);
+    } else {
+      res.status(400).send("An unknown error occurred");
+    }
   }
 };
 

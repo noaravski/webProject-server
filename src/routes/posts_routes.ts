@@ -6,7 +6,7 @@ import {
   removeLike,
   isLiked,
   createPost,
-  getAllPosts
+  getAllPosts,
 } from "../controllers/posts_controller";
 import { authMiddleware } from "../controllers/user_controller";
 const router = express.Router();

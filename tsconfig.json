@@ -1,12 +1,15 @@
 {
-    "compilerOptions": {
-      "module": "commonjs",
-      "target": "es6",
-      "esModuleInterop": true,
-      "sourceMap": true,
-      "outDir": "dist",
-      "moduleResolution": "node",
-      "resolveJsonModule": true,
-    },
-    "lib": ["es2015"]
-  }
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "CommonJS",
+    "strict": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node", "express", "jest"]
+  },
+  "exclude": ["node_modules", "dist", "jest.config.ts"] 
+}

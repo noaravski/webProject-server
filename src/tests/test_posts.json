@@ -1,14 +1,16 @@
 [
   {
-    "content": "This is the first test post.",
+    "content": "This is a test post no. 1",
     "sender": "noa",
+    "_id": "",
     "title": "First Post",
-    "_id":"679503ef3d6d9acf8fa7d02f"
+    "imageUrl": ""
   },
   {
-    "content": "This is the second test post.",
+    "content": "This is a test post no. 2",
     "sender": "noa",
+    "_id": "",
     "title": "Second Post",
-    "_id": "679503ef3d6d9acf8fa7d02e"
+    "imageUrl": ""
   }
 ]
