@@ -8,7 +8,7 @@
     "testUser": "tsc && jest --detectOpenHandles --forceExit user.test.ts",
     "testPost": "tsc && jest --detectOpenHandles --forceExit post.test.ts",
     "testComment": "tsc && jest --detectOpenHandles --forceExit comment.test.ts",
-    "dev": "nodemon ./src/app.ts",
+    "dev": "copy .env_dev .env && nodemon ./src/app.ts",
     "lint": "eslint . --ext .ts",
     "start": "tsc && node dist/app.js",
     "prod": "copy .env_prod .env && tsc && node ./dist/src/app.js",

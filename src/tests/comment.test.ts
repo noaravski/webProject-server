@@ -37,7 +37,7 @@ beforeAll(async () => {
   expect(response.statusCode).toBe(200);
   for (const post of testPosts) {
     const response = await request(app)
-      .post("/")
+      .post("/api/post")
       .set("authorization", "JWT " + testUser.refreshToken)
       .send(post);
     expect(response.statusCode).toBe(201);

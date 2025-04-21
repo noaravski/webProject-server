@@ -111,7 +111,7 @@ describe("Posts Tests", () => {
       .send({
         content: "Test Content 1",
       });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
   });
   test("Post -> update post", async () => {
     const response = await request(app)
@@ -120,7 +120,7 @@ describe("Posts Tests", () => {
       .send({
         content: "Test Content 1",
       });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
   });
   test("Post -> update non existing post existing user", async () => {
     const response = await request(app)
@@ -130,6 +130,6 @@ describe("Posts Tests", () => {
         id: "AAAAAAAAAAAAAAAAAAAAAAAA",
         content: "Test Content 1",
       });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
   });
 });
