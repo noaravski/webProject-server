@@ -6,13 +6,13 @@ import userModel from "../models/user_model";
 
 const postController = new BaseController<IPost>(postModel);
 
-const createPost = async (body: IPost) => {
+const createPost = async (req: Request, res: Response) => {
   try {
-    const newPost = new postModel(body);
+    const newPost = new postModel(req.body);
     await newPost.save();
-    return true;
-  } catch {
-    return false;
+    res.status(200).json(newPost);
+  } catch (err) {
+    res.status(500).json(err);
   }
 };
 
@@ -64,7 +64,12 @@ const addLike = async (req: Request, res: Response) => {
   try {
     const post = await postModel.findById(postId);
     if (post) {
-      post.likes?.push(req.params.userId);
+      if((post.likes ?? []).includes(req.params.userId)) {
+        res.status(400).send("Post already liked by user");
+        return;
+      }
+      post.likes = post.likes ?? [];
+      post.likes.push(req.params.userId);
       await post.save();
       res.status(200).send("Like added");
     } else {
@@ -82,7 +87,11 @@ const removeLike = async (req: Request, res: Response) => {
   try {
     const post = await postModel.findById(id);
     if (post) {
-      post.likes = post.likes?.filter((like) => like != req.params.userId);
+      if(!(post.likes ?? []).includes(req.params.userId)) {
+        res.status(400).send("Post not liked by user");
+        return;
+      }
+      post.likes = (post.likes ?? []).filter((like) => like != req.params.userId);
       await post.save();
       res.status(200).send("Like Removed");
     } else {

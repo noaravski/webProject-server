@@ -4,7 +4,7 @@ import userModel from "../models/user_model";
 import postModel from "../models/posts_model";
 
 const uploadImage = async (req: Request, res: Response) => {
-  if (req.file) {
+  if (req.file?.filename) {
     res.status(200).send("File uploaded successfully - " + req.file.filename);
   } else {
     res.status(400).send("No file uploaded.");
@@ -15,14 +15,14 @@ const uploadImageToPost = async (req: Request, res: Response) => {
   try {
     if (req.file) {
       const user = await userModel.findOne({ _id: req.params.userId });
-      await createPost({
+      req.body = {
         ...req.body,
         sender: user?.username,
         userId: user?._id,
         profilePic: user?.profilePic,
         imageUrl: req.file.filename,
-      });
-      res.status(200).send("File uploaded successfully - " + req.file.filename);
+      };
+      await createPost(req, res);
     } else {
       res.status(400).send("No file uploaded.");
     }

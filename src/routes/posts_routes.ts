@@ -44,6 +44,11 @@ const router = express.Router();
  *         likes: [245234t234234r234r23f4]
  */
 
+
+router.post("/", authMiddleware,(req: Request, res: Response) => {
+  createPost(req,res);
+});
+
 /**
  * @swagger
  * /posts:

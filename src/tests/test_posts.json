@@ -3,12 +3,14 @@
     "content": "This is a test post no. 1",
     "sender": "noa",
     "_id": "",
+    "title": "First Post",
     "imageUrl": ""
   },
   {
     "content": "This is a test post no. 2",
     "sender": "noa",
     "_id": "",
+    "title": "Second Post",
     "imageUrl": ""
   }
 ]
