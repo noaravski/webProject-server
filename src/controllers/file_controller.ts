@@ -50,7 +50,18 @@ const updateImageToPost = async (req: Request, res: Response) => {
       }
       res.status(200).send("File uploaded successfully - " + req.file.filename);
     } else {
-      res.status(400).send("No file uploaded.");
+      const post = await postModel.findOneAndUpdate(
+        { _id: req.params.postId },
+        {
+          content: req.body.content,
+        },
+        { new: true }
+      );
+      if (!post) {
+        res.status(404).send("Post not found or user not authorized.");
+        return;
+      }
+      res.status(200).send("Post updated successfully without image.");
     }
   } catch (error) {
     console.error("Error creating post:", error);

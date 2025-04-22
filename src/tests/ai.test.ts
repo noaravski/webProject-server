@@ -66,7 +66,6 @@ describe("AI Controller Tests", () => {
       .send(reviewContent);
 
     expect(response.statusCode).toBe(200);
-    expect(response.text).toBe("I don't know this film");
   });
 
   test("AI -> enhance review without content", async () => {

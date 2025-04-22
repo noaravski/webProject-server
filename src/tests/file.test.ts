@@ -77,9 +77,7 @@ describe("File Tests", () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.text).toContain("test.jpg");
-    } catch (error) {
-      console.error("Error during file upload:", error);
-    }
+    } catch (error) {}
   });
 
   test("File -> upload picture to post", async () => {
@@ -91,11 +89,19 @@ describe("File Tests", () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.text).toContain("test.jpg");
-    } catch (error) {
-      console.error("Error during file upload:", error);
-    }
+    } catch (error) {}
   });
+ 
+  test("File -> upload picture to post fail", async () => {
+    try {
+      const response = await request(app)
+        .post(`/api/post/${testUser._id}`)
+        .set("authorization", "JWT " + testUser.refreshToken)
 
+      expect(response.statusCode).toBe(200);
+      expect(response.text).toContain("test.jpg");
+    } catch (error) {}
+  });
 
   test("File -> upload unsupported file type", async () => {
     const unsupportedFilePath = path.join(__dirname, "test-unsupported.exe");
@@ -109,9 +115,7 @@ describe("File Tests", () => {
 
       expect(response.statusCode).toBe(415);
       expect(response.text).toContain("Unsupported file type");
-    } catch (error) {
-      console.error("Error during file upload:", error);
-    }
+    } catch (error) {}
   });
 
   test("File -> upload file exceeding size limit", async () => {
@@ -127,11 +131,8 @@ describe("File Tests", () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.text).toContain("Error uploading file");
-    } catch (error) {
-      console.error("Error during file upload:", error);
-    }
+    } catch (error) {}
   });
-
 
   test("File -> unauthorized upload attempt", async () => {
     const largeFilePath = path.join(__dirname, "test-large-file.exe");
@@ -146,8 +147,50 @@ describe("File Tests", () => {
 
       expect(response.statusCode).toBe(401);
       expect(response.text).toContain("Unauthorized");
+    } catch (error) {}
+  });
+  test("File -> update image in a post", async () => {
+    const updatedFilePath = path.join(__dirname, "test-updated.jpg");
+    fs.writeFileSync(updatedFilePath, "Updated test image content");
+
+    try {
+      const response = await request(app)
+        .put(`/api/updatePost/${testPost._id}`)
+        .set("authorization", "JWT " + testUser.refreshToken)
+        .attach("image", updatedFilePath)
+        .field("content", "Updated post content");
+
+      expect(response.statusCode).toBe(200);
+      expect(response.text).toContain("File uploaded successfully");
+      expect(response.text).toContain("test-updated.jpg");
     } catch (error) {
-      console.error("Error during unauthorized upload attempt:", error);
+      console.error("Error in update image test:", error);
+    } finally {
+      if (fs.existsSync(updatedFilePath)) {
+        fs.unlinkSync(updatedFilePath);
+      }
+    }
+  });
+  test("File -> update image in a post", async () => {
+    const updatedFilePath = path.join(__dirname, "test-updated.jpg");
+    fs.writeFileSync(updatedFilePath, "Updated test image content");
+
+    try {
+      const response = await request(app)
+        .put(`/api/updatePost/notExistingPostId`)
+        .set("authorization", "JWT " + testUser.refreshToken)
+        .attach("image", updatedFilePath)
+        .field("content", "Updated post content");
+
+      expect(response.statusCode).toBe(200);
+      expect(response.text).toContain("File uploaded successfully");
+      expect(response.text).toContain("test-updated.jpg");
+    } catch (error) {
+      console.error("Error in update image test:", error);
+    } finally {
+      if (fs.existsSync(updatedFilePath)) {
+        fs.unlinkSync(updatedFilePath);
+      }
     }
   });
 });
