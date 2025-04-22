@@ -403,22 +403,6 @@ const getProfilePicUrl = async (req: Request, res: Response) => {
   }
 };
 
-const idBySender = async (req: Request, res: Response) => {
-  try {
-    const user = await userModel.find({ username: req.params.sender });
-
-    if (user) {
-      res.status(200).send(user[0]._id);
-    } else {
-      res.status(404).send("User details was not found");
-    }
-  } catch (err) {
-    res
-      .status(400)
-      .send(err instanceof Error ? err.message : "An unknown error occurred");
-  }
-};
-
 const getUserPosts = async (req: Request, res: Response) => {
   try {
     const user = await userModel.findOne({ username: req.params.sender });

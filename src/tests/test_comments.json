@@ -1,20 +1,14 @@
 [
   {
     "content": "This is a test comment no. 1",
-    "sender": "noa",
-    "postId": "",
-    "_id": ""
+    "sender": "noa"
   },
   {
     "content": "This is a test comment no. 2",
-    "sender": "noa",
-    "postId": "",
-    "_id": ""
+    "sender": "noa"
   },
   {
     "content": "This is a test comment no. 3",
-    "sender": "noa",
-    "postId": "",
-    "_id": ""
+    "sender": "noa"
   }
 ]

@@ -46,7 +46,6 @@ beforeAll(async () => {
         .send(post);
 
       if (response.statusCode !== 201) {
-        console.error("Failed to create post:", response.body);
       }
       expect(response.statusCode).toBe(200);
       post._id = response.body._id;

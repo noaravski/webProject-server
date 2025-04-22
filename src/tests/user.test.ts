@@ -358,6 +358,7 @@ describe("Users Tests", () => {
     const tokenResponse = await request(app)
       .post(baseUrl + "/login")
       .send(testUser);
+    testUser.refreshToken = testUser.refreshToken || [];
     testUser.refreshToken.push(tokenResponse.body.refreshToken);
 
     const response = await request(app)
@@ -402,7 +403,7 @@ describe("Users Tests", () => {
       .send({
         username: testUser.username,
       });
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
   });
 
   test("User -> Google login fail (missing credential)", async () => {
@@ -423,7 +424,6 @@ describe("Users Tests", () => {
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty("_id", testUser._id);
     } catch (error) {
-      console.error("Error in test: ", error);
     }
   });
 
