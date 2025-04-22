@@ -1,5 +1,5 @@
 import express from "express";
-import { uploadMiddleware } from "../middleware/uploadService";
+import { upload, uploadMiddleware } from "../middleware/uploadService";
 import { authMiddleware } from "../controllers/user_controller";
 import { createPost } from "../controllers/posts_controller";
 import {
@@ -88,10 +88,20 @@ router.post("/api/post/:userId", authMiddleware, async (req, res) => {
   });
 });
 
-router.put("/api/updatePost/:postId", authMiddleware, uploadMiddleware, async (req, res) => {
-  updateImageToPost(req, res);
+router.post("/api/post", authMiddleware, async (req, res) => {
+  uploadMiddleware(req, res, (err) => {
+    if (err) {
+      res.status(400).send({ error: "Error uploading file" });
+      return;
+    }
+    uploadImageToPost(req, res);
+  });
 });
 
-
+router.put("/api/updatePost/:postId", authMiddleware, (req, res) => {
+  uploadMiddleware(req, res, (err) => {
+    updateImageToPost(req, res);
+  });
+});
 
 export default router;

@@ -12,6 +12,7 @@ import {
   authMiddleware,
   getUserPosts,
   getProfilePicUrl,
+  getUserPostsW,
 } from "../controllers/user_controller";
 import { uploadMiddleware } from "../middleware/uploadService";
 
@@ -271,13 +272,9 @@ router.get("/", (req: Request, res: Response) => {
  *         description: Server error
  */
 router.post("/", async (req: Request, res: Response) => {
-  if (!req.file) {
+  uploadMiddleware(req, res, () => {
     createUser(req, res);
-  } else {
-    uploadMiddleware(req, res, () => {
-      createUser(req, res);
-    });
-  }
+  });
 });
 
 /**
@@ -349,13 +346,9 @@ router.get("/", (req: Request, res: Response) => {
  *         description: Server error
  */
 router.put("/:id", authMiddleware, (req: Request, res: Response) => {
-  if (!req.file) {
+  uploadMiddleware(req, res, () => {
     updateUser(req, res);
-  } else {
-    uploadMiddleware(req, res, () => {
-      updateUser(req, res);
-    });
-  }
+  });
 });
 
 /**
@@ -388,7 +381,15 @@ router.delete("/:id", (req: Request, res: Response) => {
   deleteUser(req, res);
 });
 
-router.get("/details/:userId", authMiddleware, (req: Request, res: Response) => {
+router.get(
+  "/details/:userId",
+  authMiddleware,
+  (req: Request, res: Response) => {
+    getUserDetails(req, res);
+  }
+);
+
+router.get("/details", authMiddleware, (req: Request, res: Response) => {
   getUserDetails(req, res);
 });
 
@@ -398,6 +399,10 @@ router.get("/profilePic/:id", (req: Request, res: Response) => {
 
 router.get("/posts/:sender", authMiddleware, (req: Request, res: Response) => {
   getUserPosts(req, res);
+});
+
+router.get("/posts", authMiddleware, (req: Request, res: Response) => {
+  getUserPostsW(req, res);
 });
 
 export default router;

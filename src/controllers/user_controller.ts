@@ -242,14 +242,13 @@ export const authMiddleware = (
 
 const updateUser = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const oldUsername = req.params.username;
   const body = req.body;
-  const userExists = await userModel.find({ _id: id });
+  const userExists = await userModel.findOne({ _id: id });
   const usernameTaken = (
     await userModel.find({ username: body.username })
   ).filter((user) => user._id.toString() !== id);
   console.log(usernameTaken);
-  if (body && userExists.length == 1 && usernameTaken.length == 0) {
+  if (body && userExists && usernameTaken.length == 0) {
     try {
       let item;
       if (req.file !== undefined) {
@@ -261,12 +260,12 @@ const updateUser = async (req: Request, res: Response) => {
           }
         );
         await postModel.updateMany(
-          { sender: oldUsername },
-          { $set: { profilePic: req.file.filename, sender: body.username } }
+          { sender: userExists.username },
+          { $set: { profilePic: req.file.filename, sender: item?.username } }
         );
         await commentModel.updateMany(
-          { sender: oldUsername },
-          { $set: { sender: body.username } }
+          { sender: userExists.username },
+          { $set: { sender: item?.username } }
         );
       } else {
         item = await userModel.findByIdAndUpdate(
@@ -277,12 +276,12 @@ const updateUser = async (req: Request, res: Response) => {
           }
         );
         await postModel.updateMany(
-          { sender: oldUsername },
-          { $set: { sender: body.username } }
+          { sender: userExists.username },
+          { $set: { sender: item?.username } }
         );
         await commentModel.updateMany(
-          { sender: oldUsername },
-          { $set: { sender: body.username } }
+          { sender: userExists.username },
+          { $set: { sender: item?.username } }
         );
       }
 
@@ -423,6 +422,26 @@ const getUserPosts = async (req: Request, res: Response) => {
   }
 };
 
+const getUserPostsW = async (req: Request, res: Response) => {
+  try {
+    const user = await userModel.findOne({ _id: req.params.userId });
+    if (!user) {
+      res.status(404).send("User not found");
+      return;
+    }
+    const posts = await postModel.find({ sender: user?.username });
+    if (posts) {
+      res.status(200).send(posts);
+    } else {
+      res.status(404).send("Posts not found");
+    }
+  } catch (err) {
+    res
+      .status(400)
+      .send(err instanceof Error ? err.message : "An unknown error occurred");
+  }
+};
+
 export {
   usersController,
   getUserPosts,
@@ -435,4 +454,5 @@ export {
   googleLogin,
   getUserDetails,
   getProfilePicUrl,
+  getUserPostsW,
 };
